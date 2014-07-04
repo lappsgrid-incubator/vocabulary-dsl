@@ -1,0 +1,151 @@
+/*
+ * Define some common URI prefixes. These can later be
+ * used as $vocab and $iso in other strings to create
+ * URLs, e.g. "$vocab/Token", "$iso/DC-2119"
+ */
+vocab="http//vocab.lappsgrid.org"
+iso="http://www.isocat.org/datcat"
+
+element {
+	name "Thing"
+	definition "The most generic specification."
+	sameAs "http://schema.org/Thing"
+	uri "$vocab/Thing"
+	properties {
+		alternateName {
+			type "String"
+			description "An alias for the item."
+		}
+	}
+}
+
+element {
+	name "Annotation"
+	parent "Thing"
+	definition "Linguistic information added to a word, phrase, clause, sentence, text, or a relation among them."
+	sameAs "$iso/DC-2318"
+	uri "$vocab/Annotation"
+	properties {
+		id {
+			type "String"
+			description "A unique identifier associated with the annotation."
+		}
+		start {
+			type "Integer"
+			description "The starting offset (0-based) in the primary data."
+		}
+		end {
+			type "Integer"
+			description "The ending offset (0-based) in the primary data."
+		}
+	}
+}
+
+element {
+	name "Sentence"
+	parent "Annotation"
+	definition "A sequence of words capable of standing alone to make an assertion, ask a question, or give a command, usually consisting of a subject and a predicate containing a finite verb. "
+	sameAs "$iso/DC-1386"
+	uri "$vocab/Sentence"
+	properties {
+		sentenceType {
+			type "String or URI"
+			description "Values such as declarative, interrogative, exclamatory, question, fragment. Ideally a URI referencing a pre-defined descriptor."
+		}
+	}
+}
+
+element {
+    name "NamedEntity"
+    parent "Annotation"
+    definition "A phrase that clearly identifies an individual from others that have similar attributes, such as the name of a person, organization, location, artifact, etc. as well as temporal expressions."
+    sameAs "$iso/DC-2275"
+    uri "$vocab/NamedEntity"
+}
+
+element {
+    name "Date"
+    parent "NamedEntity"
+    definition "A reference to a date or period."
+    similarTo "http://schema.org/Date"
+    sameAs "$iso/DC-6123"
+    properties {
+        dateType {
+            type "String or URI"
+            description "Sub-type information such as date, datetime, time, etc.. Ideally a URL referencing a pre-defined descriptor."
+        }
+    }
+}
+
+element {
+    name "Location"
+    parent "NamedEntity"
+    definition "Name of politically or geographically defined location (cities, provinces, countries, international regions, bodies of water, mountains,named regions, etc.)"
+    sameAs "$iso/DC-4339", "http://schema.org/Location"
+    uri = "$vocab/Location"
+    properties {
+        locType {
+            type "String or URI"
+            description "Location type: country, city, GPE, sea, lake, etc. Ideally a URI referencing a pre-defined descriptor."
+        }
+    }
+}
+
+element {
+    name "Organization"
+    parent "NamedEntity"
+    definition "A named corporate, governmental, educational, religious, political, or other organizational entity."
+    sameAs "$iso/DC-2979", "http://schema.org/Organization"
+    uri "$vocab/Organization"
+    properties {
+        orgType {
+            type "String or URI"
+            description "Sub-type information (e.g., government, educational, religious, political, museum, hotel, medical, etc.). Ideally a URL referencing a pre-defined descriptor."
+        }
+    }
+}
+
+element {
+    name "Person"
+    parent "NamedEntity"
+    definition "The name of a person or family."
+    sameAs "$iso/DC-2978"
+    similarTo "http://schema.org/Person"
+    uri "$vocab/Person"
+    properties {
+        gender {
+            type "String or URI"
+            description "A value such as male, female, unknown. Ideally a URL referencing a pre-defined descriptor."
+        }
+    }
+}
+
+element {
+    name "Token"
+    parent "Annotation"
+    definition "A string of one or more characters that serves as an indivisible unit for the purposes of morpho-syntactic labeling (part of speech tagging)."
+    similarTo "$iso/DC-1403"
+    uri "$vocab/Token"
+    properties {
+        pos {
+            type "String or URI"
+            description "Part-of-speech tag associated with the token."
+        }
+        lemma {
+            type "String or URI"
+            description "The root (base) form associated with the token. URI may point to a lexicon entry."
+        }
+        tokenType {
+            type "String or URI"
+            description "Sub-type such as word, punctuation, abbreviation, number, symbol, etc. Ideally a URI referencing a pre-defined descriptor."
+        }
+        orth {
+            type "String or URI"
+            description "Orthographic properties of the token such as LowerCase, UpperCase, UpperInitial, etc. Ideally a URI referencing a pre-defined descriptor."
+        }
+        length {
+            type "Integer"
+            description "The length of the token"
+        }
+    }
+}
