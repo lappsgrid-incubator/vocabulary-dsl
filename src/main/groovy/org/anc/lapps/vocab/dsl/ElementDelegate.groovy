@@ -20,17 +20,17 @@ class ElementDelegate {
         throw new MissingPropertyException("Unknown property ${name}")
     }
 
-    void name(String name) {
-        this.name = name
-    }
+//    void name(String name) {
+//        this.name = name
+//    }
 
     void parent(String parent) {
         this.parent = parent
     }
 
-    void definition(String definition) {
-        this.definition = definition
-    }
+//    void definition(String definition) {
+//        this.definition = definition
+//    }
 
     void sameAs(String... args) {
         args.each { sameAs << it }

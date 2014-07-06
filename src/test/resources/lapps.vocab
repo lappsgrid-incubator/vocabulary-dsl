@@ -3,13 +3,14 @@
  * used as $vocab and $iso in other strings to create
  * URLs, e.g. "$vocab/Token", "$iso/DC-2119"
  */
+schema="http://schema.org"
 vocab="http//vocab.lappsgrid.org"
 iso="http://www.isocat.org/datcat"
 
 element {
 	name "Thing"
 	definition "The most generic specification."
-	sameAs "http://schema.org/Thing"
+	sameAs "$schema/Thing"
 	uri "$vocab/Thing"
 	properties {
 		alternateName {
@@ -81,7 +82,7 @@ element {
     name "Location"
     parent "NamedEntity"
     definition "Name of politically or geographically defined location (cities, provinces, countries, international regions, bodies of water, mountains,named regions, etc.)"
-    sameAs "$iso/DC-4339", "http://schema.org/Location"
+    sameAs "$iso/DC-4339", "$schema/Location"
     uri = "$vocab/Location"
     properties {
         locType {
@@ -95,7 +96,7 @@ element {
     name "Organization"
     parent "NamedEntity"
     definition "A named corporate, governmental, educational, religious, political, or other organizational entity."
-    sameAs "$iso/DC-2979", "http://schema.org/Organization"
+    sameAs "$iso/DC-2979", "$schema/Organization"
     uri "$vocab/Organization"
     properties {
         orgType {
@@ -110,7 +111,7 @@ element {
     parent "NamedEntity"
     definition "The name of a person or family."
     sameAs "$iso/DC-2978"
-    similarTo "http://schema.org/Person"
+    similarTo "$schema/Person"
     uri "$vocab/Person"
     properties {
         gender {
