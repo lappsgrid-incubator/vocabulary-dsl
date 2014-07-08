@@ -1,7 +1,7 @@
 /*
  * Define some common URI prefixes. These can later be
- * used as $vocab and $iso in other strings to create
- * URLs, e.g. "$vocab/Token", "$iso/DC-2119"
+ * used in other strings to create URLs, eg:
+ * "$vocab/Token", "$iso/DC-2119"
  */
 schema="http://schema.org"
 vocab="http//vocab.lappsgrid.org"

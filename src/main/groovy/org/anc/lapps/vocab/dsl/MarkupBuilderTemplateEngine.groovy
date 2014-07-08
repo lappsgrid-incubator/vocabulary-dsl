@@ -3,6 +3,11 @@ package org.anc.lapps.vocab.dsl
 import groovy.xml.MarkupBuilder
 
 /**
+ * The MarkupBuilderTemplateEngine uses Groovy's MarkupBuilder class to generate
+ * HTML.  The template is actually the MarkupBuilder DSL. The template is loaded
+ * as a String and parsed by the GroovyShell class to create a closure that is run
+ * to generate the HTML.
+ *
  * @author Keith Suderman
  */
 class MarkupBuilderTemplateEngine implements TemplateEngine {

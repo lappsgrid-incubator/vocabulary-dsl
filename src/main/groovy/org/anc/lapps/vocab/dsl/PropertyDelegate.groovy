@@ -7,11 +7,11 @@ class PropertyDelegate {
     String type
     String description
 
-    def propertyMissing(String name, value) {
+    def setProperty(String name, value) {
         throw new MissingPropertyException("Unknown property ${name}")
     }
 
-    def propertyMissing(String name) {
+    def setProperty(String name) {
         throw new MissingPropertyException("Unknown property ${name}")
     }
 

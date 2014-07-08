@@ -8,9 +8,12 @@ import org.codehaus.groovy.control.customizers.ImportCustomizer
  */
 class VocabDsl {
     static final String EXTENSION = ".vocab"
-    static final String GROOVY_TEMPLATE = "src/test/resources/template.groovy"
+    static final String MKB_TEMPLATE = "src/test/resources/template.groovy"
     static final String HTML_TEMPLATE = "src/test/resources/template.html"
 
+    // Selects the templating engine to use.  Choices are the MarkupBuilderTemplateEngine
+    // or HtmlTemplateEngine. The former uses a template that looks like HTML while the
+    // latter uses the MarkupBuilder DSL as the template language.
     static boolean USE_MARKUPBUILDER = true
 
     Set<String> included = new HashSet<String>()
@@ -34,6 +37,17 @@ class VocabDsl {
 
     CompilerConfiguration getCompilerConfiguration() {
         ImportCustomizer customizer = new ImportCustomizer()
+        /*
+         * Custom imports can be defined in the ImportCustomizer.
+         * For example:
+         *   customizer.addImport("org.anc.xml.Parser")
+         *   customizer.addStarImports("org.anc.util")
+         *
+         * The jar files for any packages imported this way must be
+         * declared as Maven dependencies so they will be available
+         * at runtime.
+         */
+
         CompilerConfiguration configuration = new CompilerConfiguration()
         configuration.addCompilationCustomizers(customizer)
         return configuration
@@ -105,20 +119,20 @@ class VocabDsl {
         // Create the template engine that will generate the HTML.
         TemplateEngine engine
         if (USE_MARKUPBUILDER) {
-            println "Using the MarkupBuilderTemplateEngine with the GROOVY_TEMPLATE"
-            File templateFile = new File(GROOVY_TEMPLATE)
+            println "Using the MarkupBuilderTemplateEngine with the MKB_TEMPLATE"
+            File templateFile = new File(MKB_TEMPLATE)
             if (!templateFile.exists()) {
                 throw new FileNotFoundException("Unable to load the template file.")
             }
             engine = new MarkupBuilderTemplateEngine(templateFile)
         }
         else {
-            println "Using the GroovyTemplateEngine with the HTML_TEMPLATE"
+            println "Using the HtmlTemplateEngine with the HTML_TEMPLATE"
             File templateFile = new File(HTML_TEMPLATE)
             if (!templateFile.exists()) {
                 throw new FileNotFoundException("Unable to load the template file.")
             }
-            engine = new GroovyTemplateEngine(templateFile)
+            engine = new HtmlTemplateEngine(templateFile)
         }
         script.metaClass = getMetaClass(script.class, shell)
         try {
