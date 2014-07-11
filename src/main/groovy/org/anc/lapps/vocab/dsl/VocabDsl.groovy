@@ -204,42 +204,6 @@ class VocabDsl {
             elementIndex[element.name] = element
         }
 
-        /*
-        meta.Datasource = { Closure cl ->
-            cl.delegate = new DataSourceDelegate()
-            cl.resolveStrategy = Closure.DELEGATE_FIRST
-            cl()
-            String url = cl.delegate.getServiceUrl()
-            String user = cl.delegate.server.username
-            String pass = cl.delegate.server.password
-            return new DataSourceClient(url, user, pass)
-        }
-
-        meta.Server = { Closure cl ->
-            cl.delegate = new ServerDelegate()
-            cl.resolveStrategy = Closure.DELEGATE_FIRST
-            cl()
-            return new Server(cl.delegate)
-        }
-
-        meta.Service = { Closure cl ->
-            cl.delegate = new ServiceDelegate()
-            cl.resolveStrategy = Closure.DELEGATE_FIRST
-            cl()
-            def service = new Service(cl.delegate)
-            def url = service.getServiceUrl();
-            def user = service.server.username
-            def pass = service.server.password
-            return new ServiceClient(url, user, pass)
-        }
-
-        meta.Pipeline = { Closure cl ->
-            cl.delegate = new PipelineDelegate()
-            cl.resolveStrategy = Closure.DELEGATE_FIRST
-            cl()
-            return cl.delegate
-        }
-        */
         meta.initialize()
         return meta
     }
