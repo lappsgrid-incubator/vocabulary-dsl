@@ -2,15 +2,19 @@ package org.anc.lapps.vocab.dsl
 
 import org.codehaus.groovy.control.CompilerConfiguration
 import org.codehaus.groovy.control.customizers.ImportCustomizer
+import org.anc.template.TemplateEngine
 
 /**
  * @author Keith Suderman
  */
 class VocabDsl {
     static final String EXTENSION = ".vocab"
-    static final String GROOVY_TEMPLATE = "src/test/resources/template.groovy"
+    static final String MKB_TEMPLATE = "src/test/resources/template.groovy"
     static final String HTML_TEMPLATE = "src/test/resources/template.html"
 
+    // Selects the templating engine to use.  Choices are the MarkupBuilderTemplateEngine
+    // or HtmlTemplateEngine. The former uses a template that looks like HTML while the
+    // latter uses the MarkupBuilder DSL as the template language.
     static boolean USE_MARKUPBUILDER = true
 
     Set<String> included = new HashSet<String>()
@@ -34,6 +38,17 @@ class VocabDsl {
 
     CompilerConfiguration getCompilerConfiguration() {
         ImportCustomizer customizer = new ImportCustomizer()
+        /*
+         * Custom imports can be defined in the ImportCustomizer.
+         * For example:
+         *   customizer.addImport("org.anc.xml.Parser")
+         *   customizer.addStarImports("org.anc.util")
+         *
+         * The jar files for any packages imported this way must be
+         * declared as Maven dependencies so they will be available
+         * at runtime.
+         */
+
         CompilerConfiguration configuration = new CompilerConfiguration()
         configuration.addCompilationCustomizers(customizer)
         return configuration
@@ -105,20 +120,20 @@ class VocabDsl {
         // Create the template engine that will generate the HTML.
         TemplateEngine engine
         if (USE_MARKUPBUILDER) {
-            println "Using the MarkupBuilderTemplateEngine with the GROOVY_TEMPLATE"
-            File templateFile = new File(GROOVY_TEMPLATE)
+            println "Using the MarkupBuilderTemplateEngine with the MKB_TEMPLATE"
+            File templateFile = new File(MKB_TEMPLATE)
             if (!templateFile.exists()) {
                 throw new FileNotFoundException("Unable to load the template file.")
             }
             engine = new MarkupBuilderTemplateEngine(templateFile)
         }
         else {
-            println "Using the GroovyTemplateEngine with the HTML_TEMPLATE"
+            println "Using the HtmlTemplateEngine with the HTML_TEMPLATE"
             File templateFile = new File(HTML_TEMPLATE)
             if (!templateFile.exists()) {
                 throw new FileNotFoundException("Unable to load the template file.")
             }
-            engine = new GroovyTemplateEngine(templateFile)
+            engine = new HtmlTemplateEngine(templateFile)
         }
         script.metaClass = getMetaClass(script.class, shell)
         try {
@@ -190,42 +205,6 @@ class VocabDsl {
             elementIndex[element.name] = element
         }
 
-        /*
-        meta.Datasource = { Closure cl ->
-            cl.delegate = new DataSourceDelegate()
-            cl.resolveStrategy = Closure.DELEGATE_FIRST
-            cl()
-            String url = cl.delegate.getServiceUrl()
-            String user = cl.delegate.server.username
-            String pass = cl.delegate.server.password
-            return new DataSourceClient(url, user, pass)
-        }
-
-        meta.Server = { Closure cl ->
-            cl.delegate = new ServerDelegate()
-            cl.resolveStrategy = Closure.DELEGATE_FIRST
-            cl()
-            return new Server(cl.delegate)
-        }
-
-        meta.Service = { Closure cl ->
-            cl.delegate = new ServiceDelegate()
-            cl.resolveStrategy = Closure.DELEGATE_FIRST
-            cl()
-            def service = new Service(cl.delegate)
-            def url = service.getServiceUrl();
-            def user = service.server.username
-            def pass = service.server.password
-            return new ServiceClient(url, user, pass)
-        }
-
-        meta.Pipeline = { Closure cl ->
-            cl.delegate = new PipelineDelegate()
-            cl.resolveStrategy = Closure.DELEGATE_FIRST
-            cl()
-            return cl.delegate
-        }
-        */
         meta.initialize()
         return meta
     }

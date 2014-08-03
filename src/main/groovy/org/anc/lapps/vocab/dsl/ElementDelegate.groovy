@@ -20,7 +20,7 @@ class ElementDelegate {
         throw new MissingPropertyException("Unknown property ${name}")
     }
 
-    void name(String name) {
+    def name(String name) {
         this.name = name
     }
 
