@@ -5,12 +5,4 @@ pom.xml.next
 release.properties
 VERSION
 *.html
-<<<<<<< HEAD:lapps-vocab/.gitignore
-<<<<<<< HEAD:.gitignore
 /bin
-=======
-/bin
->>>>>>> origin/develop:lapps-vocab/.gitignore
-=======
-/bin
->>>>>>> origin/develop:lapps-vocab/.gitignore
