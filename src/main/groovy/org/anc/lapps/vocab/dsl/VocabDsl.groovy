@@ -2,6 +2,7 @@ package org.anc.lapps.vocab.dsl
 
 import org.codehaus.groovy.control.CompilerConfiguration
 import org.codehaus.groovy.control.customizers.ImportCustomizer
+import org.anc.template.TemplateEngine
 
 /**
  * @author Keith Suderman

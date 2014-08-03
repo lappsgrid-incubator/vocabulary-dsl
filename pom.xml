@@ -78,6 +78,11 @@
             <artifactId>ivy</artifactId>
             <version>${ivy.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.anc</groupId>
+            <artifactId>template</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
 </project>
