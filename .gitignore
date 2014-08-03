@@ -4,3 +4,6 @@ pom.xml.releaseBackup
 pom.xml.next
 release.properties
 VERSION
+src/main/java/org/anc/lapps/vocab/dsl/Version.java
+*.html
+
