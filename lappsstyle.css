@@ -28,6 +28,13 @@ text-align: right;
 font-size: x-small;
 }
 
+.index {
+    margin-top: 1em;
+    text-align: left;
+    font-size: 110%;
+    margin-bottom: 1em;
+}
+
 /* -- general -- */
 body
 {

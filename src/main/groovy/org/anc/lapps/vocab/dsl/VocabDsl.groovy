@@ -1,5 +1,8 @@
 package org.anc.lapps.vocab.dsl
 
+import groovy.xml.MarkupBuilder
+import org.anc.template.HtmlTemplateEngine
+import org.anc.template.MarkupBuilderTemplateEngine
 import org.codehaus.groovy.control.CompilerConfiguration
 import org.codehaus.groovy.control.customizers.ImportCustomizer
 import org.anc.template.TemplateEngine
@@ -11,6 +14,7 @@ class VocabDsl {
     static final String EXTENSION = ".vocab"
     static final String MKB_TEMPLATE = "src/test/resources/template.groovy"
     static final String HTML_TEMPLATE = "src/test/resources/template.html"
+    static final String INDEX_TEMPLATE = "src/test/resources/index.groovy"
 
     // Selects the templating engine to use.  Choices are the MarkupBuilderTemplateEngine
     // or HtmlTemplateEngine. The former uses a template that looks like HTML while the
@@ -140,6 +144,7 @@ class VocabDsl {
             // Running the DSL script creates the objects needed to generate the HTML
             script.run()
             makeHtml(engine)
+            makeIndexHtml()
         }
         catch (Exception e) {
             println()
@@ -151,8 +156,16 @@ class VocabDsl {
 
     void makeHtml(TemplateEngine template) {
         elements.each { element ->
+            List parents = []
+            String parent = element.parent
+            while (parent) {
+                ElementDelegate delegate = elementIndex[parent]
+                parents.add(0, delegate)
+                parent = delegate.parent
+            }
+            def params = [ element:element, elements:elementIndex, parents:parents ]
             File file = new File("${element.name}.html")
-            file.text = template.generate(elementIndex, element)
+            file.text = template.generate(params)
             println "Wrote ${file.path}"
         }
     }
@@ -207,6 +220,33 @@ class VocabDsl {
 
         meta.initialize()
         return meta
+    }
+
+
+    void makeIndexHtml() {
+        File file = new File(INDEX_TEMPLATE)
+        if (!file.exists()) {
+            throw new FileNotFoundException("Unable to find the index.groovy template.")
+        }
+        TemplateEngine template = new MarkupBuilderTemplateEngine(file)
+        String html = template.generate(roots: getTrees())
+        new File('index.html').text = html
+    }
+
+    List<TreeNode> getTrees() {
+        List<TreeNode> roots = []
+        Map<String,TreeNode> nodeMap = [:]
+        elements.each { ElementDelegate element ->
+            TreeNode elementNode = TreeNode.get(element.name)
+            if (element.parent) {
+                TreeNode parent = TreeNode.get(element.parent)
+                parent.children << elementNode
+            }
+            else {
+                roots << elementNode
+            }
+        }
+        return roots
     }
 
     static void main(args) {

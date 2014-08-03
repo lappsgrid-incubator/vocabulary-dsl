@@ -1,4 +1,10 @@
-
+/*
+ * This template expects three parameters to be passed to it:
+ *
+ * 1. element : the ElementDelegate for page being generated.
+ * 2. elements: a HashMap used to map element names to their ElementDelegate object.
+ * 3. parents: the list of all parents of this element.
+ */
 html {
     head {
         title element.name
@@ -63,6 +69,10 @@ html {
                         }
                     }
                     element = elements[element.parent]
+                }
+                div(class:'index') {
+                    span "Back to the "
+                    a(href:'index.html', 'index')
                 }
             }
         }
