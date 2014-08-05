@@ -213,7 +213,7 @@ class VocabDsl {
             println """
 USAGE
 
-java -jar vocab-${Version.version}.jar [-groovy] /path/to/script"
+java -jar vocab-.jar [-groovy] /path/to/script"
 
 Specifying the -groovy flag will cause the GroovyTemplateEngine to be
 used. Otherwise the MarkupBuilderTemplateEngine will be used.
@@ -224,7 +224,7 @@ used. Otherwise the MarkupBuilderTemplateEngine will be used.
 
         if (args[0] == '-version') {
             println()
-            println "LAPPS Vocabulary DSL v${Version.version}"
+            println "LAPPS Vocabulary DSL v"
             println "Copyright 2014 American National Corpus"
             println()
             return

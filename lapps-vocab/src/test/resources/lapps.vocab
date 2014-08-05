@@ -9,7 +9,7 @@ iso="http://www.isocat.org/datcat"
 
 element {
 	name "Thing"
-	definition "The most generic specification."
+	definition "Definition: The most generic specification."
 	sameAs "$schema/Thing"
 	uri "$vocab/Thing"
 	properties {
@@ -23,7 +23,7 @@ element {
 element {
 	name "Annotation"
 	parent "Thing"
-	definition "Linguistic information added to a word, phrase, clause, sentence, text, or a relation among them."
+	definition "Definition: Linguistic information added to a word, phrase, clause, sentence, text, or a relation among them."
 	sameAs "$iso/DC-2318"
 	uri "$vocab/Annotation"
 	properties {
@@ -45,7 +45,7 @@ element {
 element {
 	name "Sentence"
 	parent "Annotation"
-	definition "A sequence of words capable of standing alone to make an assertion, ask a question, or give a command, usually consisting of a subject and a predicate containing a finite verb. "
+	definition "Definition: A sequence of words capable of standing alone to make an assertion, ask a question, or give a command, usually consisting of a subject and a predicate containing a finite verb. "
 	sameAs "$iso/DC-1386"
 	uri "$vocab/Sentence"
 	properties {
@@ -59,7 +59,7 @@ element {
 element {
     name "NamedEntity"
     parent "Annotation"
-    definition "A phrase that clearly identifies an individual from others that have similar attributes, such as the name of a person, organization, location, artifact, etc. as well as temporal expressions."
+    definition "Definition: A phrase that clearly identifies an individual from others that have similar attributes, such as the name of a person, organization, location, artifact, etc. as well as temporal expressions."
     sameAs "$iso/DC-2275"
     uri "$vocab/NamedEntity"
 }
@@ -67,7 +67,7 @@ element {
 element {
     name "Date"
     parent "NamedEntity"
-    definition "A reference to a date or period."
+    definition "Definition: A reference to a date or period."
     similarTo "http://schema.org/Date"
     sameAs "$iso/DC-6123"
     properties {
@@ -81,7 +81,7 @@ element {
 element {
     name "Location"
     parent "NamedEntity"
-    definition "Name of politically or geographically defined location (cities, provinces, countries, international regions, bodies of water, mountains,named regions, etc.)"
+    definition "Definition: Name of politically or geographically defined location (cities, provinces, countries, international regions, bodies of water, mountains,named regions, etc.)"
     sameAs "$iso/DC-4339", "$schema/Location"
     uri = "$vocab/Location"
     properties {
@@ -95,7 +95,7 @@ element {
 element {
     name "Organization"
     parent "NamedEntity"
-    definition "A named corporate, governmental, educational, religious, political, or other organizational entity."
+    definition "Definition: A named corporate, governmental, educational, religious, political, or other organizational entity."
     sameAs "$iso/DC-2979", "$schema/Organization"
     uri "$vocab/Organization"
     properties {
@@ -109,7 +109,7 @@ element {
 element {
     name "Person"
     parent "NamedEntity"
-    definition "The name of a person or family."
+    definition "Definition: The name of a person or family."
     sameAs "$iso/DC-2978"
     similarTo "$schema/Person"
     uri "$vocab/Person"
@@ -124,7 +124,7 @@ element {
 element {
     name "Token"
     parent "Annotation"
-    definition "A string of one or more characters that serves as an indivisible unit for the purposes of morpho-syntactic labeling (part of speech tagging)."
+    definition "Definition: A string of one or more characters that serves as an indivisible unit for the purposes of morpho-syntactic labeling (part of speech tagging)."
     similarTo "$iso/DC-1403"
     uri "$vocab/Token"
     properties {
