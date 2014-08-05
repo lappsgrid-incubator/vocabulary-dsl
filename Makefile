@@ -5,11 +5,12 @@ help:
 	@echo
 	@echo "Available goals are:"
 	@echo
-	@echo "    clean : Clean removes all artifacts from previous builds"
-	@echo "      jar : Creates the vocab.jar file."
-	@echo "  install : Copies the jar to the user's bin directory."
-	@echo "  release : Zips executables and uploads to the ANC web server."
-	@echo "     help : Displays this help message."
+	@echo "      clean : Clean removes all artifacts from previous builds."
+	@echo " clean-html : Removes any HTML files."
+	@echo "        jar : Creates the vocab.jar file."
+	@echo "    install : Copies the jar to the user's bin directory."
+	@echo "    release : Zips executables and uploads to the ANC web server."
+	@echo "       help : Displays this help message."
 	@echo
 	
 jar:
@@ -17,6 +18,9 @@ jar:
 	
 clean:
 	mvn clean
+	
+clean-html:
+	find . -name "*.html" | xargs rm
 	
 install:
 	#cp target/lsd-$(VERSION).jar $(HOME)/bin

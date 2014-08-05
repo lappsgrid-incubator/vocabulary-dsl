@@ -143,7 +143,7 @@ class VocabDsl {
         try {
             // Running the DSL script creates the objects needed to generate the HTML
             script.run()
-            makeHtml(engine)
+            //makeHtml(engine)
             makeIndexHtml()
         }
         catch (Exception e) {
@@ -231,6 +231,7 @@ class VocabDsl {
         TemplateEngine template = new MarkupBuilderTemplateEngine(file)
         String html = template.generate(roots: getTrees())
         new File('index.html').text = html
+        println "Wrote index.html"
     }
 
     List<TreeNode> getTrees() {

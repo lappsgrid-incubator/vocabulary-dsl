@@ -4,7 +4,17 @@
  *
  */
 
-// Define two closures that are used to simplify the list generation.
+// Starts an unordered list.
+list = { name, closure ->
+    builder.li(class:'list') {
+        span(class:'collapse') {
+            a(href:"${name}.html", name)
+        }
+        ul { closure() }
+    }
+}
+
+// Starts a list item with no children.
 item = { name ->
     builder.li {
         span(class:'collapse') {
@@ -13,15 +23,7 @@ item = { name ->
     }
 }
 
-list = { name, closure ->
-    builder.li {
-        span(class:'collapse') {
-            a(href:"${name}.html", name)
-        }
-        ul { closure() }
-    }
-}
-
+// Recursively prints a node and all its children.
 printNode = { node ->
     if (node.children.size() == 0) {
         item(node.name)
@@ -33,20 +35,13 @@ printNode = { node ->
     }
 }
 
+// The start of the HTML template.
 html {
     head {
         title 'LAPPS Vocabulary'
-        //link rel:'stylesheet', type:'text/css', href:'lappsstyle.css'
-        //script type:'text/javascript', src:'jquery-1.10.2.min.js'
-    }
-    body {
-        h1 "LAPPS Vocabulary"
-        roots.each { root ->
-            ul {
-                printNode(root)
-            }
-        }
-        script(type:'text/javascript') {
+        link rel:'stylesheet', type:'text/css', href:'lappsstyle.css'
+        script src:'jquery-1.10.2.min.js'
+        script {
             """
             \$(".collapse").click(function () {
                 \$(this).parent().children().toggle();
@@ -55,5 +50,18 @@ html {
             });
 """
         }
+    }
+    body {
+        div(id:'container') {
+            div(id:'mainContent') {
+                h1 "LAPPS Vocabulary"
+                roots.each { root ->
+                    ul {
+                        printNode(root)
+                    }
+                }
+            }
+        }
+
     }
 }
