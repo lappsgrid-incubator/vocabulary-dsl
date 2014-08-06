@@ -1,6 +1,5 @@
 package org.anc.lapps.vocab.dsl
 
-import groovy.xml.MarkupBuilder
 import org.anc.template.HtmlTemplateEngine
 import org.anc.template.MarkupBuilderTemplateEngine
 import org.codehaus.groovy.control.CompilerConfiguration
@@ -12,24 +11,24 @@ import org.anc.template.TemplateEngine
  */
 class VocabDsl {
     static final String EXTENSION = ".vocab"
-    static final String MKB_TEMPLATE = "src/test/resources/template.groovy"
-    static final String HTML_TEMPLATE = "src/test/resources/template.html"
+    static final String FILE_TEMPLATE = "src/test/resources/template.groovy"
     static final String INDEX_TEMPLATE = "src/test/resources/index.groovy"
 
     // Selects the templating engine to use.  Choices are the MarkupBuilderTemplateEngine
-    // or HtmlTemplateEngine. The former uses a template that looks like HTML while the
-    // latter uses the MarkupBuilder DSL as the template language.
-    static boolean USE_MARKUPBUILDER = true
+    // or HtmlTemplateEngine. The latter uses a template that looks like HTML while the
+    // former uses the MarkupBuilder DSL as the template language.
+//    static boolean USE_MARKUPBUILDER = true
 
     Set<String> included = new HashSet<String>()
     File parentDir
+    File destination
     Binding bindings = new Binding()
     List<ElementDelegate> elements = []
     Map<String, ElementDelegate> elementIndex = [:]
 
-    void run(File file, args) {
+    void run(File file, File destination) {
         parentDir = file.parentFile
-        run(file.text, args)
+        run(file.text, destination)
     }
 
     ClassLoader getLoader() {
@@ -58,48 +57,8 @@ class VocabDsl {
         return configuration
     }
 
-    void interactiveMode(args) {
-        TextDevice io = TextDevice.create()
-        ClassLoader loader = getLoader()
-        CompilerConfiguration configuration = getCompilerConfiguration()
-        GroovyShell shell = new GroovyShell(loader, bindings, configuration)
-        def params = [:]
-        if (args != null && args.size() > 0) {
-            // Parse any command line arguements into a HashMap that will
-            // be passed in to the user's script.
-            args.each { arg ->
-                String[] parts = arg.split('=')
-                String name = parts[0].startsWith('-') ? parts[0][1..-1] : parts[0]
-                String value = parts.size() > 1 ? parts[1] : Boolean.TRUE
-                params[name] = value
-            }
-        }
-        boolean running = true
-        while (running) {
-            io.printf("> ")
-            String input = io.readLine()
-            if (input == "exit") {
-                running = false
-            }
-            else {
-                Script script = shell.parse(input)
-                script.binding.setVariable("args", params)
-                script.metaClass = getMetaClass(script.class, shell)
-                try {
-                    script.run()
-                }
-                catch (Exception e) {
-                    io.println()
-                    io.println "Script execution threw an exception:"
-                    e.printStackTrace()
-                    io.println()
-                }
-            }
-        }
-        io.println("Good-bye.")
-    }
-
-    void run(String scriptString, args) {
+    void run(String scriptString, File destination) {
+        this.destination = destination
         ClassLoader loader = getLoader()
         CompilerConfiguration configuration = getCompilerConfiguration()
         GroovyShell shell = new GroovyShell(loader, bindings, configuration)
@@ -122,28 +81,15 @@ class VocabDsl {
         }
 
         // Create the template engine that will generate the HTML.
-        TemplateEngine engine
-        if (USE_MARKUPBUILDER) {
-            println "Using the MarkupBuilderTemplateEngine with the MKB_TEMPLATE"
-            File templateFile = new File(MKB_TEMPLATE)
-            if (!templateFile.exists()) {
-                throw new FileNotFoundException("Unable to load the template file.")
-            }
-            engine = new MarkupBuilderTemplateEngine(templateFile)
-        }
-        else {
-            println "Using the HtmlTemplateEngine with the HTML_TEMPLATE"
-            File templateFile = new File(HTML_TEMPLATE)
-            if (!templateFile.exists()) {
-                throw new FileNotFoundException("Unable to load the template file.")
-            }
-            engine = new HtmlTemplateEngine(templateFile)
-        }
+        TemplateEngine engine = new MarkupBuilderTemplateEngine(new File(FILE_TEMPLATE))
         script.metaClass = getMetaClass(script.class, shell)
+
         try {
-            // Running the DSL script creates the objects needed to generate the HTML
+            // Running the DSL script creates the data model needed to generate the HTML.
             script.run()
-            //makeHtml(engine)
+
+            // Now generate the HTML.
+            makeHtml(engine)
             makeIndexHtml()
         }
         catch (Exception e) {
@@ -164,7 +110,7 @@ class VocabDsl {
                 parent = delegate.parent
             }
             def params = [ element:element, elements:elementIndex, parents:parents ]
-            File file = new File("${element.name}.html")
+            File file = new File(destination, "${element.name}.html")
             file.text = template.generate(params)
             println "Wrote ${file.path}"
         }
@@ -230,7 +176,7 @@ class VocabDsl {
         }
         TemplateEngine template = new MarkupBuilderTemplateEngine(file)
         String html = template.generate(roots: getTrees())
-        new File('index.html').text = html
+        new File(destination, 'index.html').text = html
         println "Wrote index.html"
     }
 
@@ -266,25 +212,21 @@ used. Otherwise the MarkupBuilderTemplateEngine will be used.
 
         if (args[0] == '-version') {
             println()
-            println "LAPPS Vocabulary DSL v"
+            println "LAPPS Vocabulary DSL v" + Version.getVersion()
             println "Copyright 2014 American National Corpus"
             println()
             return
         }
-        else if (args[0] == '-i' || args[0] == "--interactive") {
-            new VocabDsl().interactiveMode(args)
-        }
-        else if (args[0] == "-groovy") {
-            VocabDsl.USE_MARKUPBUILDER = false
-            def argv = args[1..-1]
-            new VocabDsl().run(new File(args[1]), argv)
-        }
         else {
-            def argv = null
-            if (args.size() > 1) {
-                argv = args[1..-1]
+            File scriptFile = new File(args[0])
+            File destination
+            if (args.size() == 2) {
+                destination = new File(args[1])
             }
-            new VocabDsl().run(new File(args[0]), argv)
+            else {
+                destination = new File(".")
+            }
+            new VocabDsl().run(scriptFile, destination)
         }
     }
 }

@@ -4,10 +4,21 @@
  *
  */
 
+/*
+                <div>
+                    <img alt="" class="expand" src="Images/Minus.png" />
+                    <img alt="" class="collapse" src="Images/Plus.png" />
+                </div>
+
+ */
 // Starts an unordered list.
 list = { name, closure ->
-    builder.li(class:'list') {
-        span(class:'collapse') {
+    builder.li {
+        div {
+            img  alt:"", class:"expand", src:"images/minus.png"
+            img  alt:"", class:"collapse", src:"images/plus.png"
+        }
+        div {
             a(href:"${name}.html", name)
         }
         ul { closure() }
@@ -17,7 +28,7 @@ list = { name, closure ->
 // Starts a list item with no children.
 item = { name ->
     builder.li {
-        span(class:'collapse') {
+        div {
             a(href:"${name}.html", name)
         }
     }
@@ -40,14 +51,21 @@ html {
     head {
         title 'LAPPS Vocabulary'
         link rel:'stylesheet', type:'text/css', href:'lappsstyle.css'
+        link rel:'stylesheet', type:'text/css', href:'tree.css'
         script src:'jquery-1.10.2.min.js'
         script {
             """
-            \$(".collapse").click(function () {
-                \$(this).parent().children().toggle();
-                \$(this).toggle();
-
-            });
+                var toggle = function(node) {
+                    node.toggle();
+                    node.next().toggle()
+                    node.parent().parent().children().last().toggle()
+                }
+                \$(".expand").click(function () {
+                    toggle(\$(this))
+                });
+                \$(".collapse").click(function () {
+                    toggle(\$(this))
+                });
 """
         }
     }
