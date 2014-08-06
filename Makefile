@@ -20,7 +20,7 @@ clean:
 	mvn clean
 	
 clean-html:
-	find . -name "*.html" | xargs rm
+	find html -name "*.html" | xargs rm
 	
 install:
 	#cp target/lsd-$(VERSION).jar $(HOME)/bin

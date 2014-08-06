@@ -4,37 +4,38 @@
  *
  */
 
-// Starts an unordered list.
+// Starts an unordered list inside another list item.
 list = { name, closure ->
     builder.li {
-        span {
-            img  alt:"", class:"expand", src:"images/minus.png"
-            img  alt:"", class:"collapse", src:"images/plus.png"
+        span(class:'collapse') {
+            img  src:"images/minus.png"
+            img  class:"hidden", src:"images/plus.png"
         }
-        span {
-            a(href:"${name}.html", name)
+        a(href:"${name}.html", name)
+        ul(class:'tree') {
+            closure()
         }
-        ul { closure() }
     }
 }
 
 // Starts a list item with no children.
 item = { name ->
     builder.li {
-        span {
-            a(href:"${name}.html", name)
-        }
+        a(href:"${name}.html", name)
     }
 }
 
 // Recursively prints a node and all its children.
 printNode = { node ->
     if (node.children.size() == 0) {
-        item(node.name)
+//        item(node.name)
+        builder.li {
+            a(href:"${node.name}.html", node.name)
+        }
     }
     else {
         list(node.name) {
-            node.children.sort{ it.name }.each { printNode it }
+            node.children.each { printNode it }
         }
     }
 }
@@ -43,29 +44,30 @@ printNode = { node ->
 html {
     head {
         title 'LAPPS Vocabulary'
-        link rel:'stylesheet', type:'text/css', href:'lappsstyle.css'
-        script src:'jquery-1.10.2.min.js'
-        script {
-            """
-                \$(".expand").click(function () {
-                    \$(this).toggle();
-                    \$(this).next().toggle();
-                    \$(this).parent().parent().children().last().toggle();
-                });
+        link rel:'stylesheet', type:'text/css', href:'tree.css'
+        script(src:'js/jquery-1.11.1.js', type:'text/javascript', language:'javascript', "")
+        script (type:'text/javascript', """
+            \$(document).ready(function() {
                 \$(".collapse").click(function () {
-                    \$(this).toggle();
-                    \$(this).next().toggle();
-                    \$(this).parent().parent().children().last().toggle();
+                    \$(this).next().next().toggle();
+                    \$(this).children().toggle();
                 });
-"""
-        }
+            });
+        """)
     }
     body {
         div(id:'container') {
             div(id:'mainContent') {
                 h1 "LAPPS Vocabulary"
+                p "These are the annotation types defined in the LAPPS vocabulary."
+                p """Note that LAPPS does not define any types of its own.  The LAPPS
+                    vocabulary simply enumerates the URI of all types used by LAPPS
+                    services. LAPPS services may use other types with different URI and
+                    different types.  However, all LAPPS services SHOULD recognize at least
+                    the annotation types listed here."""
+                p "TODO: The RFC that defines SHOULD should be listed here."
                 roots.each { root ->
-                    ul {
+                    ul(class:'tree') {
                         printNode(root)
                     }
                 }
