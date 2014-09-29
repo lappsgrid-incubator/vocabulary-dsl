@@ -102,6 +102,8 @@ class VocabDsl {
 
     void makeHtml(TemplateEngine template) {
         elements.each { element ->
+            // Walk up the hierarchy and record the names of
+            // all ancestors.
             List parents = []
             String parent = element.parent
             while (parent) {
@@ -109,8 +111,12 @@ class VocabDsl {
                 parents.add(0, delegate)
                 parent = delegate.parent
             }
+            // params is the data model to be passed to the template
             def params = [ element:element, elements:elementIndex, parents:parents ]
+            // file is where the generated HTML will be written.
             File file = new File(destination, "${element.name}.html")
+            // Call the template to generate the HTML from the model and
+            // write it to the file.
             file.text = template.generate(params)
             println "Wrote ${file.path}"
         }
@@ -176,8 +182,9 @@ class VocabDsl {
         }
         TemplateEngine template = new MarkupBuilderTemplateEngine(file)
         String html = template.generate(roots: getTrees())
-        new File(destination, 'index.html').text = html
-        println "Wrote index.html"
+        File destination = new File(destination, 'index.html')
+        destination.text = html
+        println "Wrote ${destination.path}"
     }
 
     List<TreeNode> getTrees() {
@@ -201,7 +208,7 @@ class VocabDsl {
             println """
 USAGE
 
-java -jar vocab-.jar [-groovy] /path/to/script"
+java -jar vocab-${Version.version}.jar [-groovy] /path/to/script"
 
 Specifying the -groovy flag will cause the GroovyTemplateEngine to be
 used. Otherwise the MarkupBuilderTemplateEngine will be used.

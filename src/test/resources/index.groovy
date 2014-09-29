@@ -60,11 +60,11 @@ html {
             div(id:'mainContent') {
                 h1 "LAPPS Vocabulary"
                 p "These are the annotation types defined in the LAPPS vocabulary."
-                p """Note that LAPPS does not define any types of its own.  The LAPPS
-                    vocabulary simply enumerates the URI of all types used by LAPPS
-                    services. LAPPS services may use other types with different URI and
-                    different types.  However, all LAPPS services SHOULD recognize at least
-                    the annotation types listed here."""
+//                p """Note that LAPPS does not define any types of its own.  The LAPPS
+//                    vocabulary simply enumerates the URI of all types used by LAPPS
+//                    services. LAPPS services may use other types with different URI and
+//                    different types.  However, all LAPPS services SHOULD recognize at least
+//                    the annotation types listed here."""
                 p "TODO: The RFC that defines SHOULD should be listed here."
                 roots.each { root ->
                     ul(class:'tree') {
