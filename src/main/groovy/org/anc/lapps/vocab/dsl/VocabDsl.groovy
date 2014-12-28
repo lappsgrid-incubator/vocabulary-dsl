@@ -89,7 +89,7 @@ class VocabDsl {
             script.run()
 
             // Now generate the HTML.
-            //makeHtml(engine)
+            makeHtml(engine)
             makeIndexHtml()
         }
         catch (Exception e) {
