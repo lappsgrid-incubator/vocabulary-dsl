@@ -9,7 +9,7 @@ iso="http://www.isocat.org/datcat"
 
 element {
 	name "Thing"
-	definition "Definition: The most generic specification."
+	definition "The most generic specification."
 	sameAs "$schema/Thing"
 	uri "$vocab/Thing"
 	properties {

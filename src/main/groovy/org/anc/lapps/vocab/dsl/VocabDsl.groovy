@@ -59,37 +59,10 @@ class VocabDsl {
 
     void run(String scriptString, File destination) {
         this.destination = destination
-        ClassLoader loader = getLoader()
-        CompilerConfiguration configuration = getCompilerConfiguration()
-        GroovyShell shell = new GroovyShell(loader, bindings, configuration)
-
-        Script script = shell.parse(scriptString)
-//        if (args != null && args.size() > 0) {
-//            // Parse any command line arguements into a HashMap that will
-//            // be passed in to the user's script.
-//            def params = [:]
-//            args.each { arg ->
-//                String[] parts = arg.split('=')
-//                String name = parts[0].startsWith('-') ? parts[0][1..-1] : parts[0]
-//                String value = parts.size() > 1 ? parts[1] : Boolean.TRUE
-//                params[name] = value
-//            }
-//            script.binding.setVariable("args", params)
-//        }
-//        else {
-            script.binding.setVariable("args", [:])
-//        }
-
-        // Create the template engine that will generate the HTML.
-        TemplateEngine engine = new MarkupBuilderTemplateEngine(new File(FILE_TEMPLATE))
-        script.metaClass = getMetaClass(script.class, shell)
-
+        compile(scriptString)
         try {
-            // Running the DSL script creates the data model needed to generate the HTML.
-            script.run()
-
             // Now generate the HTML.
-            makeHtml(engine)
+            makeHtml()
             makeIndexHtml()
         }
         catch (Exception e) {
@@ -100,7 +73,21 @@ class VocabDsl {
         }
     }
 
-    void makeHtml(TemplateEngine template) {
+    void compile(String scriptString) {
+        ClassLoader loader = getLoader()
+        CompilerConfiguration configuration = getCompilerConfiguration()
+        GroovyShell shell = new GroovyShell(loader, bindings, configuration)
+
+        Script script = shell.parse(scriptString)
+        script.binding.setVariable("args", [:])
+        script.metaClass = getMetaClass(script.class, shell)
+        script.run()
+    }
+
+
+    void makeHtml() {
+        // Create the template engine that will generate the HTML.
+        TemplateEngine engine = new MarkupBuilderTemplateEngine(new File(FILE_TEMPLATE))
         elements.each { element ->
             // Walk up the hierarchy and record the names of
             // all ancestors.
