@@ -66,6 +66,7 @@ html {
             div(id:'mainContent') {
                 /****
                 p "These are the annotation types defined in the LAPPS vocabulary."
+<<<<<<< HEAD
                 p """Note that LAPPS does not define any types of its own.  The LAPPS
                     vocabulary simply enumerates the URI of all types used by LAPPS
                     services. LAPPS services may use other types with different URI and
@@ -85,6 +86,14 @@ html {
 				     have been finalized so far. Detailed information is available by 
 				     clicking on the relevant element."""                
                 //p "TODO: The RFC that defines SHOULD should be listed here."
+=======
+//                p """Note that LAPPS does not define any types of its own.  The LAPPS
+//                    vocabulary simply enumerates the URI of all types used by LAPPS
+//                    services. LAPPS services may use other types with different URI and
+//                    different types.  However, all LAPPS services SHOULD recognize at least
+//                    the annotation types listed here."""
+                p "TODO: The RFC that defines SHOULD should be listed here."
+>>>>>>> 5c8417a3602e0e67daf99e9c8bf73a2da09cc89f
                 roots.each { root ->
                     ul(class:'tree') {
                         printNode(root)

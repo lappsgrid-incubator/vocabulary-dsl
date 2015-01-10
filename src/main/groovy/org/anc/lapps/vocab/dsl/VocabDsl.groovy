@@ -11,8 +11,8 @@ import org.anc.template.TemplateEngine
  */
 class VocabDsl {
     static final String EXTENSION = ".vocab"
-    static final String FILE_TEMPLATE = "src/test/resources/template.groovy"
-    static final String INDEX_TEMPLATE = "src/test/resources/index.groovy"
+    String FILE_TEMPLATE = "src/test/resources/template.groovy"
+    String INDEX_TEMPLATE = "src/test/resources/index.groovy"
 
     // Selects the templating engine to use.  Choices are the MarkupBuilderTemplateEngine
     // or HtmlTemplateEngine. The latter uses a template that looks like HTML while the
@@ -59,37 +59,10 @@ class VocabDsl {
 
     void run(String scriptString, File destination) {
         this.destination = destination
-        ClassLoader loader = getLoader()
-        CompilerConfiguration configuration = getCompilerConfiguration()
-        GroovyShell shell = new GroovyShell(loader, bindings, configuration)
-
-        Script script = shell.parse(scriptString)
-//        if (args != null && args.size() > 0) {
-//            // Parse any command line arguements into a HashMap that will
-//            // be passed in to the user's script.
-//            def params = [:]
-//            args.each { arg ->
-//                String[] parts = arg.split('=')
-//                String name = parts[0].startsWith('-') ? parts[0][1..-1] : parts[0]
-//                String value = parts.size() > 1 ? parts[1] : Boolean.TRUE
-//                params[name] = value
-//            }
-//            script.binding.setVariable("args", params)
-//        }
-//        else {
-            script.binding.setVariable("args", [:])
-//        }
-
-        // Create the template engine that will generate the HTML.
-        TemplateEngine engine = new MarkupBuilderTemplateEngine(new File(FILE_TEMPLATE))
-        script.metaClass = getMetaClass(script.class, shell)
-
+        compile(scriptString)
         try {
-            // Running the DSL script creates the data model needed to generate the HTML.
-            script.run()
-
             // Now generate the HTML.
-            makeHtml(engine)
+            makeHtml()
             makeIndexHtml()
         }
         catch (Exception e) {
@@ -100,8 +73,24 @@ class VocabDsl {
         }
     }
 
-    void makeHtml(TemplateEngine template) {
+    void compile(String scriptString) {
+        ClassLoader loader = getLoader()
+        CompilerConfiguration configuration = getCompilerConfiguration()
+        GroovyShell shell = new GroovyShell(loader, bindings, configuration)
+
+        Script script = shell.parse(scriptString)
+        script.binding.setVariable("args", [:])
+        script.metaClass = getMetaClass(script.class, shell)
+        script.run()
+    }
+
+
+    void makeHtml() {
+        // Create the template engine that will generate the HTML.
+        TemplateEngine engine = new MarkupBuilderTemplateEngine(new File(FILE_TEMPLATE))
         elements.each { element ->
+            // Walk up the hierarchy and record the names of
+            // all ancestors.
             List parents = []
             String parent = element.parent
             while (parent) {
@@ -109,9 +98,13 @@ class VocabDsl {
                 parents.add(0, delegate)
                 parent = delegate.parent
             }
+            // params is the data model to be passed to the template
             def params = [ element:element, elements:elementIndex, parents:parents ]
+            // file is where the generated HTML will be written.
             File file = new File(destination, "${element.name}.html")
-            file.text = template.generate(params)
+            // Call the template to generate the HTML from the model and
+            // write it to the file.
+            file.text = engine.generate(params)
             println "Wrote ${file.path}"
         }
     }
@@ -176,8 +169,9 @@ class VocabDsl {
         }
         TemplateEngine template = new MarkupBuilderTemplateEngine(file)
         String html = template.generate(roots: getTrees())
-        new File(destination, 'index.html').text = html
-        println "Wrote index.html"
+        File destination = new File(destination, 'index.html')
+        destination.text = html
+        println "Wrote ${destination.path}"
     }
 
     List<TreeNode> getTrees() {
@@ -197,36 +191,66 @@ class VocabDsl {
     }
 
     static void main(args) {
-        if (args.size() == 0) {
-            println """
-USAGE
+//        if (args.size() == 0) {
+//            println """
+//USAGE
+//
+//java -jar vocab-${Version.version}.jar [-groovy] /path/to/script"
+//
+//Specifying the -groovy flag will cause the GroovyTemplateEngine to be
+//used. Otherwise the MarkupBuilderTemplateEngine will be used.
+//
+//"""
+//            return
+//        }
+        CliBuilder cli = new CliBuilder()
+        cli.header = "Generates LAPPS Vocabulary web site a LAPPS Vocab DSL file."
+        cli.v(longOpt:'version', 'displays current application version number.')
+        cli.h(longOpt:'html', args:1,'template used to generate html pages for vocabulary items.')
+        cli.i(longOpt:'index', args:1, 'template used to generate the index.html page.')
+        cli.d(longOpt:'dsl', args:1, 'this input DSL specification.')
+        cli.o(longOpt:'output', args:1, 'output directory.')
+        cli.'?'(longOpt:'help', 'displays this usage messages.')
 
-java -jar vocab-.jar [-groovy] /path/to/script"
-
-Specifying the -groovy flag will cause the GroovyTemplateEngine to be
-used. Otherwise the MarkupBuilderTemplateEngine will be used.
-
-"""
+        def params = cli.parse(args)
+        if (!params) {
             return
         }
 
-        if (args[0] == '-version') {
+        if (params.'?') {
+            cli.usage()
+            return
+        }
+        if (params.v) {
             println()
             println "LAPPS Vocabulary DSL v" + Version.getVersion()
             println "Copyright 2014 American National Corpus"
             println()
             return
         }
-        else {
-            File scriptFile = new File(args[0])
-            File destination
-            if (args.size() == 2) {
-                destination = new File(args[1])
+
+//        else {
+//            File scriptFile = new File(args[0])
+//            File destination
+//            if (args.size() == 2) {
+//                destination = new File(args[1])
+//            }
+//            else {
+//                destination = new File(".")
+//            }
+//            new VocabDsl().run(scriptFile, destination)
+//        }
+        File scriptFile = new File(params.d)
+        File destination = new File(params.o)
+        if (!destination.exists()) {
+            if (!destination.mkdirs()) {
+                println "Unable to create output directory ${destination.path}"
+                return
             }
-            else {
-                destination = new File(".")
-            }
-            new VocabDsl().run(scriptFile, destination)
         }
+        VocabDsl dsl = new VocabDsl()
+        dsl.INDEX_TEMPLATE = params.i
+        dsl.FILE_TEMPLATE = params.h
+        dsl.run(scriptFile, destination)
     }
 }

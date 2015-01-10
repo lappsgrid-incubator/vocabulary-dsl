@@ -160,6 +160,7 @@ element {
     }
 }
 
+<<<<<<< HEAD
 element {
 	name "Coreference"
 	parent "Annotation"
@@ -246,3 +247,5 @@ element {
 		}
 	}
 }
+=======
+>>>>>>> 5c8417a3602e0e67daf99e9c8bf73a2da09cc89f
