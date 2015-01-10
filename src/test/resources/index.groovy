@@ -90,7 +90,6 @@ html {
 //                    services. LAPPS services may use other types with different URI and
 //                    different types.  However, all LAPPS services SHOULD recognize at least
 //                    the annotation types listed here."""
-                p "TODO: The RFC that defines SHOULD should be listed here."
                 roots.each { root ->
                     ul(class:'tree') {
                         printNode(root)

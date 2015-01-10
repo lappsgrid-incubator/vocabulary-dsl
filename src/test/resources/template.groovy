@@ -20,16 +20,47 @@ html {
                     }
                     span element.name
                 }
+                /***
                 p {
                     b "Definition: "
                     span(element.definition)
                 }
-                table(class:'definition-table') {
+                table {
+                    tr {
+                        td { b 'Same as' }
+                        if (element.sameAs.size() == 0) {
+                            td "Nothing"
+                        }
+                        else {
+                            td { element.sameAs.collect { a(href:it, it) }.join(", ") }
+                        }
+                    }
+                    tr {
+                        td { b 'Similar to' }
+                        if (element.similarTo.size() == 0) {
+                            td 'Nothing'
+                        }
+                        else {
+                            td { element.similarTo.collect { a(href:it, it) }.join(", ") }
+                        }
+                    }
+                    tr {
+                        td { b 'URI'}
+                        td element.uri
+                    }
+                }
+                ***/
+                br()
+                table {
+                    tr {
+                        td(class:'fixed') { b 'Definition' }
+                        td element.definition
+                    }
                     if (element.sameAs.size() > 0) {
                         tr {
                             td { b "Same as" }
                             td {
-                                element.sameAs.collect { a(href:it, it) }.join(" ")
+                                element.sameAs.collect { a(href:it, it) }.join(", ")
                             }
                         }
                     }
@@ -37,7 +68,7 @@ html {
                         tr {
                             td { b "Similar to" }
                             td {
-                                element.similarTo.collect { a(href:it, it) }.join(" ")
+                                element.similarTo.collect { a(href:it, it) }.join(", ")
                             }
                         }
                     }
@@ -46,24 +77,34 @@ html {
                         td element.uri
                     }
                 }
+
                 //def parent = element.parent
-                while (element) {
-                    if (element.metadata.size() > 0)
-                    {
-                        h2 {
-                            span "Metadata from "
-                            a(href:"${element.name}.html", element.name)
+                boolean headline = true
+                /* h1 "Metadata" */
+                def node = element
+                while (node) {
+                    if (node.metadata.size() > 0) {
+                        if (headline) {
+                            // The headline only gets printed if there are metadata attributes defined.
+                            h1 "Metadata"
+                            headline = false
+                        }
+                        if (node.name != element.name) {
+                            h2 {
+                                span "Metadata from "
+                                a(href: "${node.name}.html", node.name)
+                            }
                         }
                         table(class: 'definition-table') {
                             tr {
-                                th "Properties"
-                                th "Type"
+                                th class:'fixed', "Properties"
+                                th class:'fixed', "Type"
                                 th "Description"
                             }
-                            List names = element.metadata.keySet().asList()
+                            List names = node.metadata.keySet().asList()
                             names.each { name ->
                                 tr {
-                                    def property = element.metadata[name]
+                                    def property = node.metadata[name]
                                     td name
                                     td property.type
                                     td {
@@ -73,22 +114,35 @@ html {
                             }
                         }
                     }
-                    if (element.properties.size() > 0) {
+                    node = elements[node.parent]
+                }
+
+                /* h1 "Properties" */
+                headline = true
+                node = element
+                while (node) {
+                    if (node.properties.size() > 0) {
 //                        String link = "<a href='${element.name}'>${element.name}</a>"
-                        h2 {
-                        	span "Properties from "
-                        	a(href:"${element.name}.html", element.name)
+                        if (headline) {
+                            h1 'Properties'
+                            headline = false
+                        }
+                        if (node.name != element.name) {
+                            h2 {
+                                span "Properties from "
+                                a(href:"${node.name}.html", node.name)
+                            }
                         }
                         table(class: 'definition-table') {
                             tr {
-                                th "Properties"
-                                th "Type"
+                                th class:'fixed', "Properties"
+                                th class:'fixed', "Type"
                                 th "Description"
                             }
-                            List names = element.properties.keySet().asList()
+                            List names = node.properties.keySet().asList()
                             names.each { name ->
                                 tr {
-                                    def property = element.properties[name]
+                                    def property = node.properties[name]
                                     td name
                                     td property.type
                                     td {
@@ -98,7 +152,7 @@ html {
                             }
                         }
                     }
-                    element = elements[element.parent]
+                    node = elements[node.parent]
                 }
                 br()
                 div(class:'index') {

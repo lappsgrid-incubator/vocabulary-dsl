@@ -1,310 +1,293 @@
-/* For the tree view on the index.html page. */
-ul { list-style:none; }
-li { padding-top:10px }
-ul, li, div.list-item { float:left }
-ul, li { width:100% }
-.expand { width:15px;height:15px; }
-.collapse { width:15px;height:15px;display:none }
-
 /* -- page structure -- */
 #container
 {
-width: 100%;
-text-align: left;
-margin: 0;
-background: #fff;
+    width: 100%;
+    text-align: left;
+    margin: 0;
+    background: #fff;
 }
 #intro
 {
-position: relative;
+    position: relative;
 }
 #mainContent
 {
-/* margin: 0 50px 15px 50px; */
-padding-bottom: 5px;
-border-bottom: solid 1px #CCCCCC;
-text-align: left;
+    /* margin: 0 50px 15px 50px; */
+    padding-bottom: 5px;
+    border-bottom: solid 1px #CCCCCC;
+    text-align: left;
 }
 #mainContent, #footer {
- max-width: 960px;
- min-width: 350px;
- margin: 0 auto;
+    max-width: 960px;
+    min-width: 350px;
+    margin: 0 auto;
 }
 #footer
 {
-text-align: right;
-font-size: x-small;
-}
-
-.index {
-    margin-top: 1em;
-    text-align: left;
-    font-size: 110%;
-    margin-bottom: 1em;
+    text-align: right;
+    font-size: x-small;
 }
 
 /* -- general -- */
-head{
-  font-family: Arial, Helvetica, sans-serif;
-  color: #333333;
-  font-size: small;
-}
 body
 {
-color: #3A4956;
-font-size: 75%;
-font-family: "Lucida Grande" , "Lucida Sans Unicode" , Verdana, Tahoma, Arial, sans-serif;
-line-height: 160%;
-margin: 0;
-padding: 0;
-text-align: center;
+    color: #3A4956;
+    font-size: 75%;
+    font-family: "Lucida Grande" , "Lucida Sans Unicode" , Verdana, Tahoma, Arial, sans-serif;
+    line-height: 160%;
+    margin: 0;
+    padding: 0;
 }
 code
 {
-font-family: Courier, monospace;
+    font-family: Courier, monospace;
 }
 p.head, h1
 {
-font: bold 24px Helvetica, Arial, sans-serif;
-color: #0068b2;
-letter-spacing: -1px;
-margin: 2em 0 0 0;
-text-align: center;
+    font: bold 24px Helvetica, Arial, sans-serif;
+    color: #336699;
+    letter-spacing: -1px;
+    margin: 1em 0 0 0;
 }
 h2
 {
-border-top: 1px solid #0068b2;
-padding-top: 5px;
-clear: both;
-color: #0068b2;
-font: normal 18px Helvetica, Arial, sans-serif;
-margin: 2em 0 0 0;
+    /* border-top: 1px solid #336699; */
+    padding-top: 5px;
+    clear: both;
+    color: #336699;
+    font: normal 18px Helvetica, Arial, sans-serif;
+    margin: 1em 0 0 0;
 }
 h3
 {
-font-size: 12px;
-color: #06577F;
-margin: 1em 0 0 0;
-position: relative;
-top: 8px;
+    font-size: 12px;
+    color: #660000;
+    margin: 1em 0 0 0;
+    position: relative;
+    top: 8px;
 }
 hr
 {
-border: none;
-height: 1px;
-background: #ccc;
-margin: 2em 0 4em 0;
+    border: none;
+    height: 1px;
+    background: #ccc;
+    margin: 2em 0 4em 0;
 }
 p
 {
-font-size: 100%
-margin: 1em 0 0 0;
-color: #0068B2;
+    margin: 1em 0 0 0;
 }
 pre
 {
-font-family: Courier, monospace;
-font-size: 120%;
-background: #E1E1E1;
-width: auto;
-padding: 5px 5px 5px 10px;
-margin: 1em 0 0 0;
-text-align: left;
-overflow: auto;
+    font-family: Courier, monospace;
+    font-size: 120%;
+    background: #E1E1E1;
+    width: auto;
+    padding: 5px 5px 5px 10px;
+    margin: 1em 0 0 0;
+    text-align: left;
+    overflow: auto;
 }
 
 /* -- header/title -- */
 #pageHeader
 {
-width: 100%;
-height: 80px;
-background: #0068b2;
-position: top;
+    width: 100%;
+    height: 80px;
+    background: #336699;
+    position: top;
 }
 #pageHeader h1
 {
-color: #fff;
-margin: 0 0 5px 20px;
-font: bold Helvetica, Arial, sans-serif;
-letter-spacing: -1px;
+    color: #fff;
+    margin: 0 0 5px 20px;
+    /* font: bold Helvetica, Arial, sans-serif; */
+    font-weight: bold;
+    font-family: Helvetica, Arial, sans-serif;
+    letter-spacing: -1px;
 }
 #pageHeader a:link, #pageHeader a:hover, #pageHeader a:visited
 {
-color: #fff;
-background-color: #0068b2;
-text-decoration: none;
+    color: #fff;
+    background-color: #336699;
+    text-decoration: none;
 }
 
 
 /* -- nav bar -- */
 #selectionbar
 {
-color: #fff;
-height: 46px;
-background: #06577F;
-font-size: 90%;
+    color: #fff;
+    height: 46px;
+    background: #660000;
+    font-size: 90%;
 }
 #selectionbar ul
 {
-margin: 0;
-padding: 1em 1em 0 0;
+    margin: 0;
+    padding: 1em 1em 0 0;
 }
 #selectionbar li
 {
-display: inline;
-list-style: none;
+    display: inline;
+    list-style: none;
 }
 #selectionbar a:link, #selectionbar a:visited
 {
-color: #fff;
-display: block;
-float: right;
-padding: 1px 9px 3px 6px;
-margin: 0 6px;
-text-decoration: none;
+    color: #fff;
+    display: block;
+    float: right;
+    padding: 1px 9px 3px 6px;
+    margin: 0 6px;
+    text-decoration: none;
 }
 #selectionbar a:hover
 {
-color: #FFEE99;
-background-color: transparent;
+    color: #FFEE99;
+    background-color: transparent;
 }
 #selectionbar .activelink a
 {
-background: #0068b2;
+    background: #336699;
 }
 #selectionbar .activelink a:hover
 {
-color: #fff;
-background-color: #0068b2;
-cursor: default;
+    color: #fff;
+    background-color: #336699;
+    cursor: default;
 }
 
 
 /* -- main content -- */
 #mainContent
 {
-font-size: 100%;
+    font-size: 100%;
 }
 #mainContent ul li
 {
-list-style: inherit;
-padding: 0 0 0 5px;
-margin: 0;
+    list-style: inherit;
+    padding: 0 0 0 5px;
+    margin: 0;
 }
 #mainContent a:link
 {
-color: #06577F;
-text-decoration: none;
-border-bottom: dotted 1px #06577F;
+    color: #660000;
+    text-decoration: none;
+    border-bottom: dotted 1px #660000;
 }
 #mainContent a:visited
 {
-color: #0068b2;
-text-decoration: none;
-border-bottom: dotted 1px #0068b2;
+    color: #336699;
+    text-decoration: none;
+    border-bottom: dotted 1px #336699;
 }
 #mainContent a:hover
 {
-border-bottom: none;
-color: #fff;
-background-color: #06577F;
-text-decoration: none;
+    border-bottom: none;
+    color: #fff;
+    background-color: #660000;
+    text-decoration: none;
 }
 #mainContent blockquote
 {
-padding: 0 0 0 15px;
-margin: 10px 0 10px 15px;
-width: auto;
-float: right;
-border-left: thin dotted #000;
+    padding: 0 0 0 15px;
+    margin: 10px 0 10px 15px;
+    width: auto;
+    float: right;
+    border-left: thin dotted #000;
 }
 
 
 /* -- faq -- */
 .faq p, .faq pre, .faq ul, .faq table, .faq
 {
-margin: .5em 0 0 50px;
-padding-top: 0px;
-padding-bottom: 2px;
+    margin: .5em 0 0 50px;
+    padding-top: 0px;
+    padding-bottom: 2px;
 }
 .faq h1
 {
-margin-bottom: 1em;
+    margin-bottom: 1em;
 }
 .faq ul, .faq ol
 {
-padding-left: 30px;
-margin-left: 50px;
+    padding-left: 30px;
+    margin-left: 50px;
 }
 #mainContent .question
 {
-font-weight: bold;
-margin: 1.5em 0 0 0;
-padding-top: 0px;
-padding-bottom: 2px;
+    font-weight: bold;
+    margin: 1.5em 0 0 0;
+    padding-top: 0px;
+    padding-bottom: 2px;
 }
 
 /* -- types -- */
 table.definition-table
 {
-margin: 1em 0 0 0;
-border: 1px solid #98A0A6;
-border-collapse: collapse;
+    margin: 1em 0 0 0;
+    border: 1px solid #98A0A6;
+    width: 100%;
+    border-collapse: collapse;
 }
 .definition-table th
 {
-    border: 1px solid #98A0A6;
-text-align: left;
-background: #C7CBCE;
-padding-left: 5px;
+    text-align: left;
+    background: #C7CBCE;
+    padding-left: 5px;
 }
 .definition-table td
 {
+    padding: 0 5px 2px 5px;
+    margin: 0;
+    vertical-align: top;
     border: 1px solid #98A0A6;
-padding: 0 5px 2px 5px;
-margin: 0;
-vertical-align: top;
+    border-collapse: collapse;
 }
 .definition-table td p
 {
-padding: 0 0 .6em 0;
-margin: 0;
+    padding: 0 0 .6em 0;
+    margin: 0;
 }
 .definition-table td ul
 {
-padding-top: 0;
-margin-top: 0;
+    padding-top: 0;
+    margin-top: 0;
 }
 .definition-table tr.alt
 {
-background: #E9EAEB;
+    background: #E9EAEB;
 }
 div.attrib
 {
-padding-bottom: 1em;
+    padding-bottom: 1em;
+}
+
+.fixed {
+    width: 15%;
 }
 
 /* -- hierarchy -- */
 table.h, .h tr, .h td
 {
-border: none;
-margin: 0;
-padding: 0;
-border-collapse: collapse
+    border: none;
+    margin: 0;
+    padding: 0;
+    border-collapse: collapse
 }
 .h .space
 {
-width: 20px
+    width: 20px
 }
 .h .bar
 {
-background-color: #000;
-width: 1px
+    background-color: #000;
+    width: 1px
 }
 .h .tc
 {
-text-indent: -21px;
-padding-left: 21px
+    text-indent: -21px;
+    padding-left: 21px
 }
 
 /* -- links --*/
@@ -326,51 +309,51 @@ a.sameas:visited {color:#336699;text-decoration:none;}
 a.sameas:hover {color:gray;text-decoration:none;}
 
 
-#arial1 {  
-  font-family: Arial, Helvetica, sans-serif;  
-  color: #333333;  
-  font-size: small;
+#arial1 {
+    font-family: Arial, Helvetica, sans-serif;
+    color: #333333;
+    font-size: small;
 }
 
-tbody {  
-  font-size: small;
+tbody {
+    font-size: small;
 }
 
-#element 
-{  
-  font-size: x-large;  
-  color: #336699;  
-  font-weight: bold;
+#element
+{
+    font-size: x-large;
+    color: #336699;
+    font-weight: bold;
 }
 
-#properties {  
-  color: #336699;
+#properties {
+    color: #336699;
 }
 
 #prop-table {
-  width: 1126px; 
-  height: 27px;
+    width: 1126px;
+    height: 27px;
 }
 
 #col1 {
-  width: 188px;
+    width: 188px;
 }
 
 #col2 {
-  width: 160px;
+    width: 160px;
 }
 
 #col3 {
-  width: 500px;
+    width: 500px;
 }
 
 #col4 {
-  width: 278px;
+    width: 278px;
 }
 
 #headrow {
-  background-color: #cccccc;
-  font-weight: bold;
+    background-color: #cccccc;
+    font-weight: bold;
 }
 
 
@@ -378,93 +361,93 @@ tbody {
 /* -- other -- */
 .backtotop, .faq .backtotop
 {
-float: right;
-clear: both;
-padding: 3em 0 0 4em;
-padding: 0;
-font-size: 90%;
+    float: right;
+    clear: both;
+    padding: 3em 0 0 4em;
+    padding: 0;
+    font-size: 90%;
 }
 .date, .faq .date
 {
-color: #BFC3C7;
-text-align: right;
-font-size: x-small;
-clear: both;
-padding-top: 4em;
+    color: #BFC3C7;
+    text-align: right;
+    font-size: x-small;
+    clear: both;
+    padding-top: 4em;
 }
 .version
 {
-color: #BFC3C7;
-text-align: right;
-font-size: x-small;
-clear: both;
-padding-top: 1em;
+    color: #BFC3C7;
+    text-align: right;
+    font-size: x-small;
+    clear: both;
+    padding-top: 1em;
 }
 #selectionbar ul
 {
-float: right;
-padding: 10px 0;
+    float: right;
+    padding: 10px 0;
 }
 #mainContent, #footer, #pageHeader h1, .wrapper {
- max-width: 960px;
- min-width: 350px;
- margin: 0 auto !important;
- padding: 0 40px;
+    max-width: 960px;
+    min-width: 350px;
+    margin: 0 auto !important;
+    padding: 0 40px;
 }
 #pageHeader h1 {
- position:relative;
- top: 25px; left: -40px;
- text-shadow: 0 2px 0 #510000;
- pointer-events: none;
+    position:relative;
+    top: 25px; left: -40px;
+    text-shadow: 0 2px 0 #510000;
+    pointer-events: none;
 }
 #selectionbar ul {
-  margin: 0 auto;
-  display: block;
+    margin: 0 auto;
+    display: block;
 }
 #cse-search-form {
-  float: right;
-  margin-top:-20px;
-  width: 248px !important;
+    float: right;
+    margin-top:-20px;
+    width: 248px !important;
 }
-gsc-input input.gsc-input { background: #FFF !important;}
+.gsc-input input.gsc-input { background: #FFF !important;}
 
 @media all and (max-width: 720px) {
-  #pageHeader {
-    height: 120px;
-  }
-  #cse-search-form {
-    margin-left: 15px;
-    margin-top: 20px;
-  }
+    #pageHeader {
+        height: 120px;
+    }
+    #cse-search-form {
+        margin-left: 15px;
+        margin-top: 20px;
+    }
 }
 
 
 /* -- extras -- */
 
 input.gsc-input {
-  border-color: #660000;
-  color: #333333;
-  font-family: "Lucida Grande" , "Lucida Sans Unicode" , Verdana, Tahoma, Arial, sans-serif;
-  font-size: 11px;
-  padding: 3px;
-  width: 99%;
+    border-color: #660000;
+    color: #333333;
+    font-family: "Lucida Grande" , "Lucida Sans Unicode" , Verdana, Tahoma, Arial, sans-serif;
+    font-size: 11px;
+    padding: 3px;
+    width: 99%;
 }
 input.gsc-search-button {
-  background-color: #660000;
-  border-color: #660000;
-  color: #fff;
-  font-family: inherit;
-  font-size: 11px;
-  font-weight: normal;
-  padding: 2px 8px;
-  text-shadow: none;
+    background-color: #660000;
+    border-color: #660000;
+    color: #fff;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: normal;
+    padding: 2px 8px;
+    text-shadow: none;
 }
 .gsc-input input.gsc-input {
-  background: none repeat scroll 0% 0% white !important;
-  border-color: #660000;
-  padding: 3px;
-  width: 99%;
+    background: none repeat scroll 0% 0% white !important;
+    border-color: #660000;
+    padding: 3px;
+    width: 99%;
 }
 .gsc-clear-button {
-  display: none;
+    display: none;
 }

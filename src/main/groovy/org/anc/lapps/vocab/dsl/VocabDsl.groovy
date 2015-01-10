@@ -204,6 +204,7 @@ class VocabDsl {
 //            return
 //        }
         CliBuilder cli = new CliBuilder()
+        cli.usage = "vocab [-?|-v] -d <dsl> -i <template> -h <template> -o <directory>"
         cli.header = "Generates LAPPS Vocabulary web site a LAPPS Vocab DSL file."
         cli.v(longOpt:'version', 'displays current application version number.')
         cli.h(longOpt:'html', args:1,'template used to generate html pages for vocabulary items.')
