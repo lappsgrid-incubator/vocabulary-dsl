@@ -47,7 +47,10 @@ html {
                 while (element) {
                     if (element.properties.size() > 0) {
 //                        String link = "<a href='${element.name}'>${element.name}</a>"
-                        h2 "Properties from ${element.name}"
+                        h2 {
+                        	span "Properties from "
+                        	a(href:"${element.name}.html", element.name)
+                        }
                         table(class: 'definition-table') {
                             tr {
                                 //td { b "Properties" }
@@ -70,6 +73,7 @@ html {
                     }
                     element = elements[element.parent]
                 }
+                br()
                 div(class:'index') {
                     span "Back to the "
                     a(href:'index.html', 'index')

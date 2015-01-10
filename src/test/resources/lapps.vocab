@@ -9,7 +9,7 @@ iso="http://www.isocat.org/datcat"
 
 element {
 	name "Thing"
-	definition "Definition: The most generic specification."
+	definition "The most generic specification."
 	sameAs "$schema/Thing"
 	uri "$vocab/Thing"
 	properties {
@@ -23,7 +23,7 @@ element {
 element {
 	name "Annotation"
 	parent "Thing"
-	definition "Definition: Linguistic information added to a word, phrase, clause, sentence, text, or a relation among them."
+	definition "Linguistic information added to a word, phrase, clause, sentence, text, or a relation among them."
 	sameAs "$iso/DC-2318"
 	uri "$vocab/Annotation"
 	properties {
@@ -31,6 +31,15 @@ element {
 			type "String"
 			description "A unique identifier associated with the annotation."
 		}
+	}
+}
+
+element {
+	name "TextAnnotation"
+	parent "Annotation"
+	definition "An annotation over a span of text."
+	uri "$vocab/TextAnnotation"
+	properties {
 		start {
 			type "Integer"
 			description "The starting offset (0-based) in the primary data."
@@ -44,8 +53,8 @@ element {
 
 element {
 	name "Sentence"
-	parent "Annotation"
-	definition "Definition: A sequence of words capable of standing alone to make an assertion, ask a question, or give a command, usually consisting of a subject and a predicate containing a finite verb. "
+	parent "TextAnnotation"
+	definition "A sequence of words capable of standing alone to make an assertion, ask a question, or give a command, usually consisting of a subject and a predicate containing a finite verb. "
 	sameAs "$iso/DC-1386"
 	uri "$vocab/Sentence"
 	properties {
@@ -58,8 +67,8 @@ element {
 
 element {
     name "NamedEntity"
-    parent "Annotation"
-    definition "Definition: A phrase that clearly identifies an individual from others that have similar attributes, such as the name of a person, organization, location, artifact, etc. as well as temporal expressions."
+    parent "TextAnnotation"
+    definition "A phrase that clearly identifies an individual from others that have similar attributes, such as the name of a person, organization, location, artifact, etc. as well as temporal expressions."
     sameAs "$iso/DC-2275"
     uri "$vocab/NamedEntity"
 }
@@ -67,7 +76,7 @@ element {
 element {
     name "Date"
     parent "NamedEntity"
-    definition "Definition: A reference to a date or period."
+    definition "A reference to a date or period."
     similarTo "http://schema.org/Date"
     sameAs "$iso/DC-6123"
     properties {
@@ -81,7 +90,7 @@ element {
 element {
     name "Location"
     parent "NamedEntity"
-    definition "Definition: Name of politically or geographically defined location (cities, provinces, countries, international regions, bodies of water, mountains,named regions, etc.)"
+    definition "Name of politically or geographically defined location (cities, provinces, countries, international regions, bodies of water, mountains,named regions, etc.)"
     sameAs "$iso/DC-4339", "$schema/Location"
     uri = "$vocab/Location"
     properties {
@@ -95,7 +104,7 @@ element {
 element {
     name "Organization"
     parent "NamedEntity"
-    definition "Definition: A named corporate, governmental, educational, religious, political, or other organizational entity."
+    definition "A named corporate, governmental, educational, religious, political, or other organizational entity."
     sameAs "$iso/DC-2979", "$schema/Organization"
     uri "$vocab/Organization"
     properties {
@@ -109,7 +118,7 @@ element {
 element {
     name "Person"
     parent "NamedEntity"
-    definition "Definition: The name of a person or family."
+    definition "The name of a person or family."
     sameAs "$iso/DC-2978"
     similarTo "$schema/Person"
     uri "$vocab/Person"
@@ -123,8 +132,8 @@ element {
 
 element {
     name "Token"
-    parent "Annotation"
-    definition "Definition: A string of one or more characters that serves as an indivisible unit for the purposes of morpho-syntactic labeling (part of speech tagging)."
+    parent "TextAnnotation"
+    definition "A string of one or more characters that serves as an indivisible unit for the purposes of morpho-syntactic labeling (part of speech tagging)."
     similarTo "$iso/DC-1403"
     uri "$vocab/Token"
     properties {
@@ -149,4 +158,91 @@ element {
             description "The length of the token"
         }
     }
+}
+
+element {
+	name "Coreference"
+	parent "Annotation"
+	definition "Used to mark references to other mentions of the same entity or instance."
+	uri "$vocab/Coreference"
+	properties {
+		mentions {
+			type "List of IDs"
+			description "A list of identifiers. Each identifier points to an object of type Annotations, or a subtype thereof."
+		}
+		representative {
+			type "String"
+			description "An identifier that point to the representative item in the coreference chain."
+		}
+	}
+}
+
+element {
+	name "Markable"
+	parent "Annotation"
+	definition "Annotation type used if the coreferenced item is not already wrapped in a suitable annotation type that can be referenced."
+	uri "$vocab/Markable"
+	properties {
+		targets {
+			type "List if IDs"
+			description "The ID values of the non-contiguous annotations that are part of this Markable annotation."
+		}
+	}
+}
+
+element {
+	name "PhraseStructure"
+	parent "Annotation"
+	definition "A container for phrase structure information."
+	uri "$vocab/PhraseStructure"
+	properties {
+		categorySet {
+			type "URI"
+			description "The URI for the category set."
+		}
+		constituents {
+			type "Set of ID"
+			description "The set of IDs for the constituents annotations."
+		}
+	}
+}
+
+element {
+	name "Constituent"
+	parent "Annotation"
+	definition "A constituent of a phrase structure (parse tree)."
+	uri "$vocab/Constituent"
+	properties {
+		label {
+			type "String"
+			description "A category label."
+		}
+		children {
+			type "List of ID"
+			description "The children (if any) of this constituent. The children are assumed to be other Constituent annotations."
+		}
+	}
+}
+
+element {
+	name "DependencyStructure"
+	definition "A container for all dependency structure information."
+	parent "Annotation"
+	uri "$vocab/DependencyStructure"
+	metadata {
+		dependencySet {
+			type "URI"
+			description "The URI for a particular set of dependency labels."
+		}
+	}
+	properties {
+		dependencyType {
+			type "String"
+			description "The type of the dependencies; for example basic, collapsed, etc."
+		}
+		dependencies {
+			type "Set of ID"
+			description "The ID values of a set of annotations of type <tt>Dependency</tt>"
+		}
+	}
 }
