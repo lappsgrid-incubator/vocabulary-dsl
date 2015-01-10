@@ -11,8 +11,8 @@ import org.anc.template.TemplateEngine
  */
 class VocabDsl {
     static final String EXTENSION = ".vocab"
-    static final String FILE_TEMPLATE = "src/test/resources/template.groovy"
-    static final String INDEX_TEMPLATE = "src/test/resources/index.groovy"
+    String FILE_TEMPLATE = "src/test/resources/template.groovy"
+    String INDEX_TEMPLATE = "src/test/resources/index.groovy"
 
     // Selects the templating engine to use.  Choices are the MarkupBuilderTemplateEngine
     // or HtmlTemplateEngine. The latter uses a template that looks like HTML while the
@@ -104,7 +104,7 @@ class VocabDsl {
             File file = new File(destination, "${element.name}.html")
             // Call the template to generate the HTML from the model and
             // write it to the file.
-            file.text = template.generate(params)
+            file.text = engine.generate(params)
             println "Wrote ${file.path}"
         }
     }
@@ -191,36 +191,66 @@ class VocabDsl {
     }
 
     static void main(args) {
-        if (args.size() == 0) {
-            println """
-USAGE
+//        if (args.size() == 0) {
+//            println """
+//USAGE
+//
+//java -jar vocab-${Version.version}.jar [-groovy] /path/to/script"
+//
+//Specifying the -groovy flag will cause the GroovyTemplateEngine to be
+//used. Otherwise the MarkupBuilderTemplateEngine will be used.
+//
+//"""
+//            return
+//        }
+        CliBuilder cli = new CliBuilder()
+        cli.header = "Generates LAPPS Vocabulary web site a LAPPS Vocab DSL file."
+        cli.v(longOpt:'version', 'displays current application version number.')
+        cli.h(longOpt:'html', args:1,'template used to generate html pages for vocabulary items.')
+        cli.i(longOpt:'index', args:1, 'template used to generate the index.html page.')
+        cli.d(longOpt:'dsl', args:1, 'this input DSL specification.')
+        cli.o(longOpt:'output', args:1, 'output directory.')
+        cli.'?'(longOpt:'help', 'displays this usage messages.')
 
-java -jar vocab-${Version.version}.jar [-groovy] /path/to/script"
-
-Specifying the -groovy flag will cause the GroovyTemplateEngine to be
-used. Otherwise the MarkupBuilderTemplateEngine will be used.
-
-"""
+        def params = cli.parse(args)
+        if (!params) {
             return
         }
 
-        if (args[0] == '-version') {
+        if (params.'?') {
+            cli.usage()
+            return
+        }
+        if (params.v) {
             println()
             println "LAPPS Vocabulary DSL v" + Version.getVersion()
             println "Copyright 2014 American National Corpus"
             println()
             return
         }
-        else {
-            File scriptFile = new File(args[0])
-            File destination
-            if (args.size() == 2) {
-                destination = new File(args[1])
+
+//        else {
+//            File scriptFile = new File(args[0])
+//            File destination
+//            if (args.size() == 2) {
+//                destination = new File(args[1])
+//            }
+//            else {
+//                destination = new File(".")
+//            }
+//            new VocabDsl().run(scriptFile, destination)
+//        }
+        File scriptFile = new File(params.d)
+        File destination = new File(params.o)
+        if (!destination.exists()) {
+            if (!destination.mkdirs()) {
+                println "Unable to create output directory ${destination.path}"
+                return
             }
-            else {
-                destination = new File(".")
-            }
-            new VocabDsl().run(scriptFile, destination)
         }
+        VocabDsl dsl = new VocabDsl()
+        dsl.INDEX_TEMPLATE = params.i
+        dsl.FILE_TEMPLATE = params.h
+        dsl.run(scriptFile, destination)
     }
 }
