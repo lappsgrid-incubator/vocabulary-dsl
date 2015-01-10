@@ -20,7 +20,10 @@ html {
                     }
                     span element.name
                 }
-                p element.definition
+                p {
+                    b "Definition: "
+                    span(element.definition)
+                }
                 table(class:'definition-table') {
                     if (element.sameAs.size() > 0) {
                         tr {
@@ -45,6 +48,31 @@ html {
                 }
                 //def parent = element.parent
                 while (element) {
+                    if (element.metadata.size() > 0)
+                    {
+                        h2 {
+                            span "Metadata from "
+                            a(href:"${element.name}.html", element.name)
+                        }
+                        table(class: 'definition-table') {
+                            tr {
+                                th "Properties"
+                                th "Type"
+                                th "Description"
+                            }
+                            List names = element.metadata.keySet().asList()
+                            names.each { name ->
+                                tr {
+                                    def property = element.metadata[name]
+                                    td name
+                                    td property.type
+                                    td {
+                                        mkp.yieldUnescaped property.description
+                                    }
+                                }
+                            }
+                        }
+                    }
                     if (element.properties.size() > 0) {
 //                        String link = "<a href='${element.name}'>${element.name}</a>"
                         h2 {
@@ -53,20 +81,19 @@ html {
                         }
                         table(class: 'definition-table') {
                             tr {
-                                //td { b "Properties" }
-                                //td { b "Type" }
-                                //td { b "Description" }
                                 th "Properties"
                                 th "Type"
                                 th "Description"
                             }
-                            List names = element.properties.keySet().asList().sort()
+                            List names = element.properties.keySet().asList()
                             names.each { name ->
                                 tr {
                                     def property = element.properties[name]
                                     td name
                                     td property.type
-                                    td property.description
+                                    td {
+                                        mkp.yieldUnescaped property.description
+                                    }
                                 }
                             }
                         }

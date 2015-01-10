@@ -26,6 +26,16 @@ element {
 	definition "Linguistic information added to a word, phrase, clause, sentence, text, or a relation among them."
 	sameAs "$iso/DC-2318"
 	uri "$vocab/Annotation"
+	metadata {
+	    producer {
+	        type "List of URI"
+	        description "The software that produced the annotations."
+	    }
+	    rules {
+	        type "List of URI"
+	        description "The documentation (if any) for the rules that were used to identify the annotations."
+	    }
+	}
 	properties {
 		id {
 			type "String"
@@ -245,4 +255,61 @@ element {
 			description "The ID values of a set of annotations of type <tt>Dependency</tt>"
 		}
 	}
+}
+
+element {
+    name "Document"
+    definition "Any electronic media content (other than computer programs or system files), including text (language), audio recordings, images, videos, web pages, etc. A document may consist of several physical computer files."
+    parent "Thing"
+    uri "$vocab/Document"
+    properties {
+        id {
+            type "String"
+            description "A unique identifier associated with the document."
+        }
+        source {
+            type "String or URI"
+            description "The source of the document."
+        }
+        sourceType {
+            type "String or URI"
+            description "Source types include creator, distributor, contributor, publisher, etc."
+        }
+        encoding {
+            type "String or URI"
+            description """The physical or digital manifestation of the resource. Encoding may be used
+                to determine the software, hardware or other equipment needed to display or operate the
+                resource. Recommended best practice is to select a value from the list of Internet Media
+                Types [http://www.iana.org/ assignments/media-types/] defining computer media formats).
+                <br/>
+                See also <a href="http://dublincore.org/documents/2001/04/12/usageguide/sectd.shtml#format">Dublin Core 4.13 Format</a>
+                """
+        }
+        language {
+            type "String or URI"
+            description """A language of the intellectual content of the resource. Recommended best practice
+                for the values of the Language element is defined by  RFC 3066
+                [RFC 3066, http://www.ietf.org/rfc/ rfc3066.txt] which, in conjunction with ISO 639
+                [ISO 639, http://www.oasis- open.org/cover/iso639a.html]), defines two- and three-letter
+                primary language tags with optional sub-tags. Examples include "en" or "eng" for English,
+                "akk" for Akkadian, and "en-GB" for English used in the United Kingdom.
+                <br/>
+                See also <a href="http://dublincore.org/documents/2001/04/12/usageguide/sectd.shtml#language">Dublin Core 4.15 Language</a>
+            """
+        }
+    }
+}
+
+element {
+    name "TextDocument"
+    definition "Any electronic media content consisting of text (language). A text document may consist of several physical computer files."
+    parent "Document"
+    uri "$vocab/TextDocument"
+}
+
+element {
+    name "AudioDocument"
+    definition "Any electronic media content consisting of text (language). A text document may consist of several physical computer files."
+    parent "Document"
+    uri "$vocab/AudioDocument"
 }
