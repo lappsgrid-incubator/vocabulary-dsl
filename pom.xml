@@ -10,7 +10,9 @@
     </parent>
     <groupId>org.anc.lapps</groupId>
     <artifactId>vocab-dsl</artifactId>
-    <version>1.1.0</version>
+    <version>1.1.1</version>
+    <name>LAPPS Vocabulary DSL</name>
+    <description>DSL processor used to generate the LAPP Vocabulary web pages.</description>
     <properties>
         <groovy.version>2.2.0</groovy.version>
         <ivy.version>2.2.0</ivy.version>
