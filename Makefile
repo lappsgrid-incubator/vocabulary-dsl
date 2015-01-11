@@ -43,7 +43,7 @@ release:
 	if [ -f target/vocab-latest.zip ] ; then rm target/vocab-latest.zip ; fi
 
 	mkdir $(DIST)
-	cat $(RES)/vocab | sed 's|__JAR__|$(HOME)/bin/vocab-$(VERSION).jar|' > $(DIST)/vocab
+	cat $(RES)/vocab | sed 's|__JAR__|vocab-$(VERSION).jar|' > $(DIST)/vocab
 	chmod u+x $(DIST)/vocab
 	cp $(RES)/lapps.vocab $(DIST)
 	cp $(RES)/*.groovy $(DIST)
