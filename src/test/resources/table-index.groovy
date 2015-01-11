@@ -25,6 +25,33 @@ item = { name ->
     }
 }
 
+printTable = { node ->
+    builder.table(class:'h') {
+        tr {
+            td(class:'tc', colspan:4) {
+                if (node.properties) {
+                    mkp.yieldUnescaped "<a href='${node.name}.html'>${node.name}</a>: <span>${node.properties}</span>"
+                }
+                else {
+                    a(href:"${node.name}.html", node.name)
+                }
+            }
+        }
+        if (node.children.size() > 0) {
+            node.children.each { child ->
+                tr {
+                    td(class:'space','')
+                    td(class:'bar','')
+                    td(class:'space','')
+                    td {
+                        printTable(child)
+                    }
+                }
+            }
+        }
+    }
+}
+
 // Recursively prints a node and all its children.
 printNode = { node ->
     if (node.children.size() == 0) {
@@ -76,13 +103,13 @@ html {
         }
         div(id:'mainContent') {
             /****
-            p "These are the annotation types defined in the LAPPS vocabulary."
-            p """Note that LAPPS does not define any types of its own.  The LAPPS
-                vocabulary simply enumerates the URI of all types used by LAPPS
-                services. LAPPS services may use other types with different URI and
-                different types.  However, all LAPPS services SHOULD recognize at least
-                the annotation types listed here."""
-            ****/
+             p "These are the annotation types defined in the LAPPS vocabulary."
+             p """Note that LAPPS does not define any types of its own.  The LAPPS
+             vocabulary simply enumerates the URI of all types used by LAPPS
+             services. LAPPS services may use other types with different URI and
+             different types.  However, all LAPPS services SHOULD recognize at least
+             the annotation types listed here."""
+             ****/
             p """The LAPPS Web Service Exchange Vocabulary defines an ontology of
                  terms for a core of linguistic objects and features exchanged among
                  NLP tools that consume and produce linguistically annotated data.
@@ -101,11 +128,17 @@ html {
 //                    services. LAPPS services may use other types with different URI and
 //                    different types.  However, all LAPPS services SHOULD recognize at least
 //                    the annotation types listed here."""
+            br()
+            h1 "LAPPS Exchange Vocabulary Type Hierarchy"
             roots.each { root ->
-                ul(class:'tree') {
-                    printNode(root)
-                }
+                //ul(class:'tree') {
+                //    printNode(root)
+                //}
+                br()
+                printTable(root)
             }
+            br()
+            br()
         }
     }
 }

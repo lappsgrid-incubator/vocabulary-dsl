@@ -45,10 +45,10 @@ element {
 }
 
 element {
-	name "TextAnnotation"
+	name "Span"
 	parent "Annotation"
 	definition "An annotation over a span of text."
-	uri "$vocab/TextAnnotation"
+	uri "$vocab/Span"
 	properties {
 		start {
 			type "Integer"
@@ -63,7 +63,7 @@ element {
 
 element {
 	name "Sentence"
-	parent "TextAnnotation"
+	parent "Span"
 	definition "A sequence of words capable of standing alone to make an assertion, ask a question, or give a command, usually consisting of a subject and a predicate containing a finite verb. "
 	sameAs "$iso/DC-1386"
 	uri "$vocab/Sentence"
@@ -77,7 +77,7 @@ element {
 
 element {
     name "NamedEntity"
-    parent "TextAnnotation"
+    parent "Span"
     definition "A phrase that clearly identifies an individual from others that have similar attributes, such as the name of a person, organization, location, artifact, etc. as well as temporal expressions."
     sameAs "$iso/DC-2275"
     uri "$vocab/NamedEntity"
@@ -92,7 +92,7 @@ element {
     properties {
         dateType {
             type "String or URI"
-            description "Sub-type information such as date, datetime, time, etc.. Ideally a URL referencing a pre-defined descriptor."
+            description "Sub-type information such as date, datetime, time, etc. Ideally a URI referencing a pre-defined descriptor."
         }
     }
 }
@@ -135,14 +135,14 @@ element {
     properties {
         gender {
             type "String or URI"
-            description "A value such as male, female, unknown. Ideally a URL referencing a pre-defined descriptor."
+            description "A value such as male, female, unknown. Ideally a URI referencing a pre-defined descriptor."
         }
     }
 }
 
 element {
     name "Token"
-    parent "TextAnnotation"
+    parent "Span"
     definition "A string of one or more characters that serves as an indivisible unit for the purposes of morpho-syntactic labeling (part of speech tagging)."
     similarTo "$iso/DC-1403"
     uri "$vocab/Token"
@@ -189,13 +189,13 @@ element {
 
 element {
 	name "Markable"
-	parent "Annotation"
+	parent "Span"
 	definition "Annotation type used if the coreferenced item is not already wrapped in a suitable annotation type that can be referenced."
 	uri "$vocab/Markable"
 	properties {
 		targets {
-			type "List if IDs"
-			description "The ID values of the non-contiguous annotations that are part of this Markable annotation."
+			type "List of IDs"
+			description "ID values of the annotations that are part of this Markable annotation."
 		}
 	}
 }
@@ -211,25 +211,25 @@ element {
 			description "The URI for the category set."
 		}
 		constituents {
-			type "Set of ID"
-			description "The set of IDs for the constituents annotations."
+			type "Set of IDs"
+			description "The set of IDs for the constituent annotations."
 		}
 	}
 }
 
 element {
 	name "Constituent"
-	parent "Annotation"
+	parent "Span"
 	definition "A constituent of a phrase structure (parse tree)."
 	uri "$vocab/Constituent"
 	properties {
 		label {
-			type "String"
+			type "String or URI"
 			description "A category label."
 		}
 		children {
-			type "List of ID"
-			description "The children (if any) of this constituent. The children are assumed to be other Constituent annotations."
+			type "List of IDs"
+			description "The children (if any) of this constituent. The children are typically other Constituent annotations or Tokens."
 		}
 	}
 }
@@ -247,11 +247,11 @@ element {
 	}
 	properties {
 		dependencyType {
-			type "String"
+			type "String or URI"
 			description "The type of the dependencies; for example basic, collapsed, etc."
 		}
 		dependencies {
-			type "Set of ID"
+			type "Set of IDs"
 			description "The ID values of a set of annotations of type <tt>Dependency</tt>"
 		}
 	}

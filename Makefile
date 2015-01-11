@@ -45,8 +45,7 @@ release:
 	cat $(RES)/vocab | sed 's|__JAR__|$(HOME)/bin/vocab-$(VERSION).jar|' > $(DIST)/vocab
 	chmod u+x $(DIST)/vocab
 	cp $(RES)/lapps.vocab $(DIST)
-	cp $(RES)/index.groovy $(DIST)
-	cp $(RES)/template.groovy $(DIST)
+	cp $(RES)/*.groovy $(DIST)
 	cp -r $(HTML) $(DIST)
 	cp $(JAR) $(DIST)
 	cd target ; zip -r vocab vocab ; cp vocab.zip $(NAME).zip ; mv vocab.zip vocab-latest.zip

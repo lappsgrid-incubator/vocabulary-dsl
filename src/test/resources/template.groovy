@@ -12,7 +12,17 @@ html {
     }
     body {
         div(id:'container') {
+            div(id:'intro') {
+                div(id:'pageHeader') {
+                    h1 "LAPPS Web Service Exchange Vocabulary"
+                }
+            }
             div(id:'mainContent') {
+                div(id:'sectionbar') {
+                    p {
+                        a(href:'index.html', 'Home')
+                    }
+                }
                 p(class:'head') {
                     parents.each { parent ->
                         a(href:"${parent.name}.html", parent.name)

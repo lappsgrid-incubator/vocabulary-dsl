@@ -176,9 +176,8 @@ class VocabDsl {
 
     List<TreeNode> getTrees() {
         List<TreeNode> roots = []
-        Map<String,TreeNode> nodeMap = [:]
         elements.each { ElementDelegate element ->
-            TreeNode elementNode = TreeNode.get(element.name)
+            TreeNode elementNode = TreeNode.get(element)
             if (element.parent) {
                 TreeNode parent = TreeNode.get(element.parent)
                 parent.children << elementNode

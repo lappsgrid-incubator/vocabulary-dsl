@@ -1,3 +1,18 @@
+ul.tree { list-style:none; }
+.hidden { display: none; }
+
+.property {
+    font-size: 90%;
+    font-style: italic;
+    color: #105010;
+}
+.index {
+    margin-top: 1em;
+    text-align: left;
+    font-size: 110%;
+    margin-bottom: 1em;
+}
+
 /* -- page structure -- */
 #container
 {
@@ -16,7 +31,9 @@
     padding-bottom: 5px;
     border-bottom: solid 1px #CCCCCC;
     text-align: left;
+    font-size: small;
 }
+
 #mainContent, #footer {
     max-width: 960px;
     min-width: 350px;
@@ -204,7 +221,9 @@ pre
     margin: .5em 0 0 50px;
     padding-top: 0px;
     padding-bottom: 2px;
+    color: #3A4956;
 }
+
 .faq h1
 {
     margin-bottom: 1em;
