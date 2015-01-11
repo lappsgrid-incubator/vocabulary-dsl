@@ -6,7 +6,7 @@ package org.anc.lapps.vocab.dsl;
  */
 public final class Version
 {
-	private static final String version = "1.1.0";
+	private static final String version = "1.1.1";
 
 	public static String getVersion() { return version; }
 }
