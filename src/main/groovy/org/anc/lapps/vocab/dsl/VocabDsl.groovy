@@ -1,27 +1,34 @@
 package org.anc.lapps.vocab.dsl
 
+import org.anc.template.HtmlTemplateEngine
+import org.anc.template.MarkupBuilderTemplateEngine
 import org.codehaus.groovy.control.CompilerConfiguration
 import org.codehaus.groovy.control.customizers.ImportCustomizer
+import org.anc.template.TemplateEngine
 
 /**
  * @author Keith Suderman
  */
 class VocabDsl {
     static final String EXTENSION = ".vocab"
-    static final String GROOVY_TEMPLATE = "src/test/resources/template.groovy"
-    static final String HTML_TEMPLATE = "src/test/resources/template.html"
+    String FILE_TEMPLATE = "src/test/resources/template.groovy"
+    String INDEX_TEMPLATE = "src/test/resources/index.groovy"
 
-    static boolean USE_MARKUPBUILDER = true
+    // Selects the templating engine to use.  Choices are the MarkupBuilderTemplateEngine
+    // or HtmlTemplateEngine. The latter uses a template that looks like HTML while the
+    // former uses the MarkupBuilder DSL as the template language.
+//    static boolean USE_MARKUPBUILDER = true
 
     Set<String> included = new HashSet<String>()
     File parentDir
+    File destination
     Binding bindings = new Binding()
     List<ElementDelegate> elements = []
     Map<String, ElementDelegate> elementIndex = [:]
 
-    void run(File file, args) {
+    void run(File file, File destination) {
         parentDir = file.parentFile
-        run(file.text, args)
+        run(file.text, destination)
     }
 
     ClassLoader getLoader() {
@@ -34,97 +41,29 @@ class VocabDsl {
 
     CompilerConfiguration getCompilerConfiguration() {
         ImportCustomizer customizer = new ImportCustomizer()
+        /*
+         * Custom imports can be defined in the ImportCustomizer.
+         * For example:
+         *   customizer.addImport("org.anc.xml.Parser")
+         *   customizer.addStarImports("org.anc.util")
+         *
+         * The jar files for any packages imported this way must be
+         * declared as Maven dependencies so they will be available
+         * at runtime.
+         */
+
         CompilerConfiguration configuration = new CompilerConfiguration()
         configuration.addCompilationCustomizers(customizer)
         return configuration
     }
 
-    void interactiveMode(args) {
-        TextDevice io = TextDevice.create()
-        ClassLoader loader = getLoader()
-        CompilerConfiguration configuration = getCompilerConfiguration()
-        GroovyShell shell = new GroovyShell(loader, bindings, configuration)
-        def params = [:]
-        if (args != null && args.size() > 0) {
-            // Parse any command line arguements into a HashMap that will
-            // be passed in to the user's script.
-            args.each { arg ->
-                String[] parts = arg.split('=')
-                String name = parts[0].startsWith('-') ? parts[0][1..-1] : parts[0]
-                String value = parts.size() > 1 ? parts[1] : Boolean.TRUE
-                params[name] = value
-            }
-        }
-        boolean running = true
-        while (running) {
-            io.printf("> ")
-            String input = io.readLine()
-            if (input == "exit") {
-                running = false
-            }
-            else {
-                Script script = shell.parse(input)
-                script.binding.setVariable("args", params)
-                script.metaClass = getMetaClass(script.class, shell)
-                try {
-                    script.run()
-                }
-                catch (Exception e) {
-                    io.println()
-                    io.println "Script execution threw an exception:"
-                    e.printStackTrace()
-                    io.println()
-                }
-            }
-        }
-        io.println("Good-bye.")
-    }
-
-    void run(String scriptString, args) {
-        ClassLoader loader = getLoader()
-        CompilerConfiguration configuration = getCompilerConfiguration()
-        GroovyShell shell = new GroovyShell(loader, bindings, configuration)
-
-        Script script = shell.parse(scriptString)
-        if (args != null && args.size() > 0) {
-            // Parse any command line arguements into a HashMap that will
-            // be passed in to the user's script.
-            def params = [:]
-            args.each { arg ->
-                String[] parts = arg.split('=')
-                String name = parts[0].startsWith('-') ? parts[0][1..-1] : parts[0]
-                String value = parts.size() > 1 ? parts[1] : Boolean.TRUE
-                params[name] = value
-            }
-            script.binding.setVariable("args", params)
-        }
-        else {
-            script.binding.setVariable("args", [:])
-        }
-
-        // Create the template engine that will generate the HTML.
-        TemplateEngine engine
-        if (USE_MARKUPBUILDER) {
-            println "Using the MarkupBuilderTemplateEngine with the GROOVY_TEMPLATE"
-            File templateFile = new File(GROOVY_TEMPLATE)
-            if (!templateFile.exists()) {
-                throw new FileNotFoundException("Unable to load the template file.")
-            }
-            engine = new MarkupBuilderTemplateEngine(templateFile)
-        }
-        else {
-            println "Using the GroovyTemplateEngine with the HTML_TEMPLATE"
-            File templateFile = new File(HTML_TEMPLATE)
-            if (!templateFile.exists()) {
-                throw new FileNotFoundException("Unable to load the template file.")
-            }
-            engine = new GroovyTemplateEngine(templateFile)
-        }
-        script.metaClass = getMetaClass(script.class, shell)
+    void run(String scriptString, File destination) {
+        this.destination = destination
+        compile(scriptString)
         try {
-            // Running the DSL script creates the objects needed to generate the HTML
-            script.run()
-            makeHtml(engine)
+            // Now generate the HTML.
+            makeHtml()
+            makeIndexHtml()
         }
         catch (Exception e) {
             println()
@@ -134,10 +73,38 @@ class VocabDsl {
         }
     }
 
-    void makeHtml(TemplateEngine template) {
+    void compile(String scriptString) {
+        ClassLoader loader = getLoader()
+        CompilerConfiguration configuration = getCompilerConfiguration()
+        GroovyShell shell = new GroovyShell(loader, bindings, configuration)
+
+        Script script = shell.parse(scriptString)
+        script.binding.setVariable("args", [:])
+        script.metaClass = getMetaClass(script.class, shell)
+        script.run()
+    }
+
+
+    void makeHtml() {
+        // Create the template engine that will generate the HTML.
+        TemplateEngine engine = new MarkupBuilderTemplateEngine(new File(FILE_TEMPLATE))
         elements.each { element ->
-            File file = new File("${element.name}.html")
-            file.text = template.generate(elementIndex, element)
+            // Walk up the hierarchy and record the names of
+            // all ancestors.
+            List parents = []
+            String parent = element.parent
+            while (parent) {
+                ElementDelegate delegate = elementIndex[parent]
+                parents.add(0, delegate)
+                parent = delegate.parent
+            }
+            // params is the data model to be passed to the template
+            def params = [ element:element, elements:elementIndex, parents:parents ]
+            // file is where the generated HTML will be written.
+            File file = new File(destination, "${element.name}.html")
+            // Call the template to generate the HTML from the model and
+            // write it to the file.
+            file.text = engine.generate(params)
             println "Wrote ${file.path}"
         }
     }
@@ -190,81 +157,100 @@ class VocabDsl {
             elementIndex[element.name] = element
         }
 
-        /*
-        meta.Datasource = { Closure cl ->
-            cl.delegate = new DataSourceDelegate()
-            cl.resolveStrategy = Closure.DELEGATE_FIRST
-            cl()
-            String url = cl.delegate.getServiceUrl()
-            String user = cl.delegate.server.username
-            String pass = cl.delegate.server.password
-            return new DataSourceClient(url, user, pass)
-        }
-
-        meta.Server = { Closure cl ->
-            cl.delegate = new ServerDelegate()
-            cl.resolveStrategy = Closure.DELEGATE_FIRST
-            cl()
-            return new Server(cl.delegate)
-        }
-
-        meta.Service = { Closure cl ->
-            cl.delegate = new ServiceDelegate()
-            cl.resolveStrategy = Closure.DELEGATE_FIRST
-            cl()
-            def service = new Service(cl.delegate)
-            def url = service.getServiceUrl();
-            def user = service.server.username
-            def pass = service.server.password
-            return new ServiceClient(url, user, pass)
-        }
-
-        meta.Pipeline = { Closure cl ->
-            cl.delegate = new PipelineDelegate()
-            cl.resolveStrategy = Closure.DELEGATE_FIRST
-            cl()
-            return cl.delegate
-        }
-        */
         meta.initialize()
         return meta
     }
 
+
+    void makeIndexHtml() {
+        File file = new File(INDEX_TEMPLATE)
+        if (!file.exists()) {
+            throw new FileNotFoundException("Unable to find the index.groovy template.")
+        }
+        TemplateEngine template = new MarkupBuilderTemplateEngine(file)
+        String html = template.generate(roots: getTrees())
+        File destination = new File(destination, 'index.html')
+        destination.text = html
+        println "Wrote ${destination.path}"
+    }
+
+    List<TreeNode> getTrees() {
+        List<TreeNode> roots = []
+        elements.each { ElementDelegate element ->
+            TreeNode elementNode = TreeNode.get(element)
+            if (element.parent) {
+                TreeNode parent = TreeNode.get(element.parent)
+                parent.children << elementNode
+            }
+            else {
+                roots << elementNode
+            }
+        }
+        return roots
+    }
+
     static void main(args) {
-        if (args.size() == 0) {
-            println """
-USAGE
+//        if (args.size() == 0) {
+//            println """
+//USAGE
+//
+//java -jar vocab-${Version.version}.jar [-groovy] /path/to/script"
+//
+//Specifying the -groovy flag will cause the GroovyTemplateEngine to be
+//used. Otherwise the MarkupBuilderTemplateEngine will be used.
+//
+//"""
+//            return
+//        }
+        CliBuilder cli = new CliBuilder()
+        cli.usage = "vocab [-?|-v] -d <dsl> -i <template> -h <template> -o <directory>"
+        cli.header = "Generates LAPPS Vocabulary web site a LAPPS Vocab DSL file."
+        cli.v(longOpt:'version', 'displays current application version number.')
+        cli.h(longOpt:'html', args:1,'template used to generate html pages for vocabulary items.')
+        cli.i(longOpt:'index', args:1, 'template used to generate the index.html page.')
+        cli.d(longOpt:'dsl', args:1, 'this input DSL specification.')
+        cli.o(longOpt:'output', args:1, 'output directory.')
+        cli.'?'(longOpt:'help', 'displays this usage messages.')
 
-java -jar vocab-${Version.version}.jar [-groovy] /path/to/script"
-
-Specifying the -groovy flag will cause the GroovyTemplateEngine to be
-used. Otherwise the MarkupBuilderTemplateEngine will be used.
-
-"""
+        def params = cli.parse(args)
+        if (!params) {
             return
         }
 
-        if (args[0] == '-version') {
+        if (params.'?') {
+            cli.usage()
+            return
+        }
+        if (params.v) {
             println()
-            println "LAPPS Vocabulary DSL v${Version.version}"
+            println "LAPPS Vocabulary DSL v" + Version.getVersion()
             println "Copyright 2014 American National Corpus"
             println()
             return
         }
-        else if (args[0] == '-i' || args[0] == "--interactive") {
-            new VocabDsl().interactiveMode(args)
-        }
-        else if (args[0] == "-groovy") {
-            VocabDsl.USE_MARKUPBUILDER = false
-            def argv = args[1..-1]
-            new VocabDsl().run(new File(args[1]), argv)
-        }
-        else {
-            def argv = null
-            if (args.size() > 1) {
-                argv = args[1..-1]
+
+//        else {
+//            File scriptFile = new File(args[0])
+//            File destination
+//            if (args.size() == 2) {
+//                destination = new File(args[1])
+//            }
+//            else {
+//                destination = new File(".")
+//            }
+//            new VocabDsl().run(scriptFile, destination)
+//        }
+        File scriptFile = new File(params.d)
+        File destination = new File(params.o)
+        if (!destination.exists()) {
+            if (!destination.mkdirs()) {
+                println "Unable to create output directory ${destination.path}"
+                return
             }
-            new VocabDsl().run(new File(args[0]), argv)
         }
+        VocabDsl dsl = new VocabDsl()
+        dsl.INDEX_TEMPLATE = params.i
+        dsl.FILE_TEMPLATE = params.h
+        dsl.run(scriptFile, destination)
     }
 }

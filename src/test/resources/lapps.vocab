@@ -1,15 +1,16 @@
 /*
  * Define some common URI prefixes. These can later be
- * used as $vocab and $iso in other strings to create
- * URLs, e.g. "$vocab/Token", "$iso/DC-2119"
+ * used in other strings to create URLs, eg:
+ * "$vocab/Token", "$iso/DC-2119"
  */
+schema="http://schema.org"
 vocab="http//vocab.lappsgrid.org"
 iso="http://www.isocat.org/datcat"
 
 element {
 	name "Thing"
 	definition "The most generic specification."
-	sameAs "http://schema.org/Thing"
+	sameAs "$schema/Thing"
 	uri "$vocab/Thing"
 	properties {
 		alternateName {
@@ -25,11 +26,30 @@ element {
 	definition "Linguistic information added to a word, phrase, clause, sentence, text, or a relation among them."
 	sameAs "$iso/DC-2318"
 	uri "$vocab/Annotation"
+	metadata {
+	    producer {
+	        type "List of URI"
+	        description "The software that produced the annotations."
+	    }
+	    rules {
+	        type "List of URI"
+	        description "The documentation (if any) for the rules that were used to identify the annotations."
+	    }
+	}
 	properties {
 		id {
 			type "String"
 			description "A unique identifier associated with the annotation."
 		}
+	}
+}
+
+element {
+	name "Span"
+	parent "Annotation"
+	definition "An annotation over a span of text."
+	uri "$vocab/Span"
+	properties {
 		start {
 			type "Integer"
 			description "The starting offset (0-based) in the primary data."
@@ -43,7 +63,7 @@ element {
 
 element {
 	name "Sentence"
-	parent "Annotation"
+	parent "Span"
 	definition "A sequence of words capable of standing alone to make an assertion, ask a question, or give a command, usually consisting of a subject and a predicate containing a finite verb. "
 	sameAs "$iso/DC-1386"
 	uri "$vocab/Sentence"
@@ -57,7 +77,7 @@ element {
 
 element {
     name "NamedEntity"
-    parent "Annotation"
+    parent "Span"
     definition "A phrase that clearly identifies an individual from others that have similar attributes, such as the name of a person, organization, location, artifact, etc. as well as temporal expressions."
     sameAs "$iso/DC-2275"
     uri "$vocab/NamedEntity"
@@ -72,7 +92,7 @@ element {
     properties {
         dateType {
             type "String or URI"
-            description "Sub-type information such as date, datetime, time, etc.. Ideally a URL referencing a pre-defined descriptor."
+            description "Sub-type information such as date, datetime, time, etc. Ideally a URI referencing a pre-defined descriptor."
         }
     }
 }
@@ -81,7 +101,7 @@ element {
     name "Location"
     parent "NamedEntity"
     definition "Name of politically or geographically defined location (cities, provinces, countries, international regions, bodies of water, mountains,named regions, etc.)"
-    sameAs "$iso/DC-4339", "http://schema.org/Location"
+    sameAs "$iso/DC-4339", "$schema/Location"
     uri = "$vocab/Location"
     properties {
         locType {
@@ -95,7 +115,7 @@ element {
     name "Organization"
     parent "NamedEntity"
     definition "A named corporate, governmental, educational, religious, political, or other organizational entity."
-    sameAs "$iso/DC-2979", "http://schema.org/Organization"
+    sameAs "$iso/DC-2979", "$schema/Organization"
     uri "$vocab/Organization"
     properties {
         orgType {
@@ -110,19 +130,19 @@ element {
     parent "NamedEntity"
     definition "The name of a person or family."
     sameAs "$iso/DC-2978"
-    similarTo "http://schema.org/Person"
+    similarTo "$schema/Person"
     uri "$vocab/Person"
     properties {
         gender {
             type "String or URI"
-            description "A value such as male, female, unknown. Ideally a URL referencing a pre-defined descriptor."
+            description "A value such as male, female, unknown. Ideally a URI referencing a pre-defined descriptor."
         }
     }
 }
 
 element {
     name "Token"
-    parent "Annotation"
+    parent "Span"
     definition "A string of one or more characters that serves as an indivisible unit for the purposes of morpho-syntactic labeling (part of speech tagging)."
     similarTo "$iso/DC-1403"
     uri "$vocab/Token"
@@ -148,4 +168,148 @@ element {
             description "The length of the token"
         }
     }
+}
+
+element {
+	name "Coreference"
+	parent "Annotation"
+	definition "Used to mark references to other mentions of the same entity or instance."
+	uri "$vocab/Coreference"
+	properties {
+		mentions {
+			type "List of IDs"
+			description "A list of identifiers. Each identifier points to an object of type Annotations, or a subtype thereof."
+		}
+		representative {
+			type "String"
+			description "An identifier that point to the representative item in the coreference chain."
+		}
+	}
+}
+
+element {
+	name "Markable"
+	parent "Span"
+	definition "Annotation type used if the coreferenced item is not already wrapped in a suitable annotation type that can be referenced."
+	uri "$vocab/Markable"
+	properties {
+		targets {
+			type "List of IDs"
+			description "ID values of the annotations that are part of this Markable annotation."
+		}
+	}
+}
+
+element {
+	name "PhraseStructure"
+	parent "Annotation"
+	definition "A container for phrase structure information."
+	uri "$vocab/PhraseStructure"
+	properties {
+		categorySet {
+			type "URI"
+			description "The URI for the category set."
+		}
+		constituents {
+			type "Set of IDs"
+			description "The set of IDs for the constituent annotations."
+		}
+	}
+}
+
+element {
+	name "Constituent"
+	parent "Span"
+	definition "A constituent of a phrase structure (parse tree)."
+	uri "$vocab/Constituent"
+	properties {
+		label {
+			type "String or URI"
+			description "A category label."
+		}
+		children {
+			type "List of IDs"
+			description "The children (if any) of this constituent. The children are typically other Constituent annotations or Tokens."
+		}
+	}
+}
+
+element {
+	name "DependencyStructure"
+	definition "A container for all dependency structure information."
+	parent "Annotation"
+	uri "$vocab/DependencyStructure"
+	metadata {
+		dependencySet {
+			type "URI"
+			description "The URI for a particular set of dependency labels."
+		}
+	}
+	properties {
+		dependencyType {
+			type "String or URI"
+			description "The type of the dependencies; for example basic, collapsed, etc."
+		}
+		dependencies {
+			type "Set of IDs"
+			description "The ID values of a set of annotations of type <tt>Dependency</tt>"
+		}
+	}
+}
+
+element {
+    name "Document"
+    definition "Any electronic media content (other than computer programs or system files), including text (language), audio recordings, images, videos, web pages, etc. A document may consist of several physical computer files."
+    parent "Thing"
+    uri "$vocab/Document"
+    properties {
+        id {
+            type "String"
+            description "A unique identifier associated with the document."
+        }
+        source {
+            type "String or URI"
+            description "The source of the document."
+        }
+        sourceType {
+            type "String or URI"
+            description "Source types include creator, distributor, contributor, publisher, etc."
+        }
+        encoding {
+            type "String or URI"
+            description """The physical or digital manifestation of the resource. Encoding may be used
+                to determine the software, hardware or other equipment needed to display or operate the
+                resource. Recommended best practice is to select a value from the list of Internet Media
+                Types [http://www.iana.org/ assignments/media-types/] defining computer media formats).
+                <br/>
+                See also <a href="http://dublincore.org/documents/2001/04/12/usageguide/sectd.shtml#format">Dublin Core 4.13 Format</a>
+                """
+        }
+        language {
+            type "String or URI"
+            description """A language of the intellectual content of the resource. Recommended best practice
+                for the values of the Language element is defined by  RFC 3066
+                [RFC 3066, http://www.ietf.org/rfc/ rfc3066.txt] which, in conjunction with ISO 639
+                [ISO 639, http://www.oasis- open.org/cover/iso639a.html]), defines two- and three-letter
+                primary language tags with optional sub-tags. Examples include "en" or "eng" for English,
+                "akk" for Akkadian, and "en-GB" for English used in the United Kingdom.
+                <br/>
+                See also <a href="http://dublincore.org/documents/2001/04/12/usageguide/sectd.shtml#language">Dublin Core 4.15 Language</a>
+            """
+        }
+    }
+}
+
+element {
+    name "TextDocument"
+    definition "Any electronic media content consisting of text (language). A text document may consist of several physical computer files."
+    parent "Document"
+    uri "$vocab/TextDocument"
+}
+
+element {
+    name "AudioDocument"
+    definition "Any electronic media content consisting of text (language). A text document may consist of several physical computer files."
+    parent "Document"
+    uri "$vocab/AudioDocument"
 }

@@ -11,6 +11,7 @@ class ElementDelegate {
     List<String> similarTo = []
     String uri
     Map properties = [:]
+    Map metadata = [:]
 
     def propertyMissing(String name, value) {
         throw new MissingPropertyException("Unknown property ${name}")
@@ -20,7 +21,7 @@ class ElementDelegate {
         throw new MissingPropertyException("Unknown property ${name}")
     }
 
-    void name(String name) {
+    def name(String name) {
         this.name = name
     }
 
@@ -42,6 +43,12 @@ class ElementDelegate {
 
     void uri(String uri) {
         this.uri = uri
+    }
+
+    void metadata(Closure cl) {
+        cl.delegate = new MetadataDelegate(metadata)
+        cl.resolveStrategy = Closure.DELEGATE_FIRST
+        cl()
     }
 
     void properties(Closure cl) {
