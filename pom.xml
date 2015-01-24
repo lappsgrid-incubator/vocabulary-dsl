@@ -91,5 +91,12 @@
             <version>1.2</version>
         </dependency>
     </dependencies>
-
+    <repositories>
+        <repository>
+            <id>anc-nexus</id>
+            <snapshots><enabled>true</enabled></snapshots>
+            <releases><enabled>true</enabled></releases>
+            <url>http://www.anc.org:8080/nexus</url>
+        </repository>
+    </repositories>
 </project>
