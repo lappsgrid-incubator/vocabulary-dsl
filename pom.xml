@@ -93,10 +93,16 @@
     </dependencies>
     <repositories>
         <repository>
-            <id>anc-nexus</id>
+            <id>anc-snapshots</id>
             <snapshots><enabled>true</enabled></snapshots>
+            <releases><enabled>false</enabled></releases>
+            <url>http://www.anc.org:8080/nexus/content/repositories/snapshots/</url>
+        </repository>
+        <repository>
+            <id>anc-releases</id>
+            <snapshots><enabled>false</enabled></snapshots>
             <releases><enabled>true</enabled></releases>
-            <url>http://www.anc.org:8080/nexus</url>
+            <url>http://www.anc.org:8080/nexus/content/repositories/releases</url>
         </repository>
     </repositories>
 </project>
