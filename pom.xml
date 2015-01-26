@@ -91,5 +91,32 @@
             <version>1.2</version>
         </dependency>
     </dependencies>
-
+    <repositories>
+        <repository>
+            <id>anc-snapshots</id>
+            <snapshots><enabled>true</enabled></snapshots>
+            <releases><enabled>false</enabled></releases>
+            <url>http://www.anc.org:8080/nexus/content/repositories/snapshots/</url>
+        </repository>
+        <repository>
+            <id>anc-releases</id>
+            <snapshots><enabled>false</enabled></snapshots>
+            <releases><enabled>true</enabled></releases>
+            <url>http://www.anc.org:8080/nexus/content/repositories/releases</url>
+        </repository>
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>anc-plugin-snapshots</id>
+            <snapshots><enabled>true</enabled></snapshots>
+            <releases><enabled>false</enabled></releases>
+            <url>http://www.anc.org:8080/nexus/content/repositories/snapshots/</url>
+        </pluginRepository>
+        <pluginRepository>
+            <id>anc-plugin-releases</id>
+            <snapshots><enabled>false</enabled></snapshots>
+            <releases><enabled>true</enabled></releases>
+            <url>http://www.anc.org:8080/nexus/content/repositories/releases</url>
+        </pluginRepository>
+    </pluginRepositories>
 </project>
