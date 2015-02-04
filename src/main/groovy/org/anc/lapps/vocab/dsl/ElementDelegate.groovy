@@ -61,7 +61,14 @@ class ElementDelegate {
         print(System.out)
     }
 
-    void print(PrintStream writer) {
+    public String getUri() {
+        if (uri) {
+            return uri
+        }
+        return "http://vocab.lappsgrid.org/${name}"
+    }
+
+    void print(def writer) {
         writer.println "Element   : $name"
         if (parent) {
             writer.println "Parent    : $parent"
