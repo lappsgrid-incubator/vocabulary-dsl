@@ -2,6 +2,15 @@ package org.anc.lapps.vocab.dsl
 
 import org.anc.template.HtmlTemplateEngine
 import org.anc.template.MarkupBuilderTemplateEngine
+import org.apache.jena.ontology.AnnotationProperty
+import org.apache.jena.ontology.DatatypeProperty
+import org.apache.jena.ontology.OntClass
+import org.apache.jena.ontology.OntModel
+import org.apache.jena.rdf.model.Model
+import org.apache.jena.rdf.model.ModelFactory
+import org.apache.jena.rdf.model.Property
+import org.apache.jena.riot.RDFDataMgr
+import org.apache.jena.riot.RDFFormat
 import org.codehaus.groovy.control.CompilerConfiguration
 import org.codehaus.groovy.control.customizers.ImportCustomizer
 import org.anc.template.TemplateEngine
@@ -10,6 +19,7 @@ import org.anc.template.TemplateEngine
  * @author Keith Suderman
  */
 class VocabDsl {
+    static final String VOCAB = 'http://vocab.lappsgrid.org/'
     static final String EXTENSION = ".vocab"
     String FILE_TEMPLATE = "src/test/resources/template.groovy"
     String INDEX_TEMPLATE = "src/test/resources/index.groovy"
@@ -25,6 +35,10 @@ class VocabDsl {
     Binding bindings = new Binding()
     List<ElementDelegate> elements = []
     Map<String, ElementDelegate> elementIndex = [:]
+
+    // Ontology used when generating RDF/OWL.  Instances are created and
+    // destroyed as needed.
+    OntModel ontology
 
     void run(File file, File destination) {
         parentDir = file.parentFile
@@ -107,6 +121,74 @@ class VocabDsl {
             file.text = engine.generate(params)
             println "Wrote ${file.path}"
         }
+    }
+
+    DatatypeProperty makeProperty(String annotation, String name) {
+        return ontology.createDatatypeProperty("${VOCAB}${annotation}#${name}")
+    }
+
+    AnnotationProperty makeMetadata(String name) {
+        return ontology.createAnnotationProperty("${VOCAB}metadata#${name}")
+    }
+
+    void makeOwl(File script) {
+        makeOwl(script, RDFFormat.JSONLD_PRETTY)
+    }
+
+    void makeOwl(File script, RDFFormat format) {
+        compile(script.text)
+
+//        Property similarTo = makeProperty('similarTo')
+
+        Map<String,OntClass> classes = [:]
+        Map<String,Property> properties = [:]
+        ontology = ModelFactory.createOntologyModel()
+        elements.each { ElementDelegate element ->
+            println "Processing ${element.name}"
+            OntClass theClass = classes[element.name]
+            if (theClass) {
+                throw new VocabularyException("Duplicate element : ${element.name}")
+            }
+            theClass = ontology.createClass(VOCAB + element.name)
+            classes[element.name] = theClass
+            theClass.addComment(ontology.createLiteral(element.definition))
+
+            // Set the parent node.
+            // TODO: It should likely be an error if the element does not have a
+            // parent. This means 'Thing' would have to have something like
+            // OWL.TOP as its parent.
+            if (element.parent) {
+                OntClass parent = classes[element.parent]
+                if (!parent) {
+                    throw new VocabularyException("Undefined parent class: ${element.parent}")
+                }
+                theClass.setSuperClass(parent)
+            }
+            element.sameAs.each { resource ->
+                println "Same as $resource"
+                theClass.addSameAs(ontology.createResource(resource))
+            }
+            element.metadata.each { String key, PropertyDelegate value ->
+                println "metadata $key -> ${value.type}"
+                Property property = makeMetadata(key)
+                property.addComment(ontology.createLiteral(value.description))
+                theClass.addProperty(property, value.type)
+            }
+            element.properties.each { String name, PropertyDelegate value ->
+                println "property $name -> ${value.type}"
+                Property property = makeProperty(element.name, name)
+                property.addComment(ontology.createLiteral(value.description))
+                theClass.addProperty(property, value.type)
+            }
+//            element.similarTo.each { resource ->
+//            }
+
+        }
+
+        String ext = format.lang.fileExtensions[0] ?: 'xml'
+        File file = new File("target/lapps-vocabulary.${ext}")
+        RDFDataMgr.write(new FileOutputStream(file), ontology, format)
+        println "Wrote ${file.path}"
     }
 
     MetaClass getMetaClass(Class<?> theClass, GroovyShell shell) {
@@ -242,6 +324,10 @@ class Features {
                 out.println "\tpublic static class ${e.name}${superClass} {"
                 e.properties.each { String name, ignored ->
                     String snakeCase = toSnakeCase(name)
+                    if (name == "pos") {
+                        // Hack-around since the POS tag name changed.
+                        out.println "\t\tpublic static final String PART_OF_SPEECH = \"pos\";"
+                    }
                     out.println "\t\tpublic static final String ${snakeCase} = \"${name}\";"
                 }
                 out.println "\t}"
@@ -277,6 +363,7 @@ class Features {
         cli.header = "Generates LAPPS Vocabulary web site a LAPPS Vocab DSL file."
         cli.v(longOpt:'version', 'displays current application version number.')
         cli.h(longOpt:'html', args:1,'template used to generate html pages for vocabulary items.')
+        cli.r(longOpt:'rdf', args:1, 'generates RDF/OWL ontology in the specifed format')
         cli.i(longOpt:'index', args:1, 'template used to generate the index.html page.')
         cli.j(longOpt:'java', args:1, 'generates a Java class containing URI defintions.')
         cli.f(longOpt:'features', 'generates the Features.java with element property names.')
@@ -329,6 +416,32 @@ class Features {
                     packageName = params.p
             }
             dsl.makeFeaturesJava(scriptFile, packageName)
+            return
+        }
+        if (params.r) {
+            RDFFormat format = RDFFormat.RDFXML_PRETTY
+            switch (params.r) {
+                case 'owl':
+                    format = RDFFormat.RDFXML_PRETTY
+                    break
+                case 'nq':
+                    format = RDFFormat.NQ
+                    break
+                case 'n3':
+                    format = RDFFormat.NTRIPLES_UTF8
+                    break
+                case 'jsonld':
+                    format = RDFFormat.NQ.JSONLD_PRETTY
+                    break
+                case 'ttl':
+                    format = RDFFormat.TTL
+                    break
+                default:
+                    println "ERROR: Unknown output format ${params.r}"
+                    println "Use one of 'owl', 'nq', 'n3', or 'jsonld'."
+                    return
+            }
+            dsl.makeOwl(scriptFile, format)
             return
         }
         File destination = new File(params.o)
