@@ -22,17 +22,11 @@ class PropertyDelegate {
     }
 
     void required(boolean required) {
-        if (requiredSet) {
+        if (requiredSet && this.required != required) {
             throw new VocabularyException("The required property has already been set.")
         }
         requiredSet = true
         this.required = required
-        if (required) {
-            println "Found a required property."
-        }
-        else {
-            println "Found an optional property."
-        }
     }
 
     void optional(boolean optional) {
