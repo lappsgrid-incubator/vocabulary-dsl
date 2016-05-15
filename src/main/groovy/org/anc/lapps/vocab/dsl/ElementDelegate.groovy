@@ -6,6 +6,7 @@ package org.anc.lapps.vocab.dsl
 class ElementDelegate {
     String name
     String definition
+    String discriminator
     String parent
     List<String> sameAs = []
     List<String> similarTo = []
@@ -31,6 +32,10 @@ class ElementDelegate {
 
     void definition(String definition) {
         this.definition = definition
+    }
+
+    void discriminator(String discriminator) {
+        this.discriminator = discriminator
     }
 
     void sameAs(String... args) {

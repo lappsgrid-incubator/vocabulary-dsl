@@ -14,7 +14,7 @@
     <name>LAPPS Vocabulary DSL</name>
     <description>DSL processor used to generate the LAPP Vocabulary web pages.</description>
     <properties>
-        <groovy.version>2.2.0</groovy.version>
+        <groovy.version>2.4.5</groovy.version>
         <ivy.version>2.2.0</ivy.version>
     </properties>
     <build>

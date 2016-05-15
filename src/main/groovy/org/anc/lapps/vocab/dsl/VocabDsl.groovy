@@ -135,11 +135,11 @@ class VocabDsl {
         return ontology.createAnnotationProperty("${VOCAB}metadata#${name}")
     }
 
-    void makeOwl(File script) {
-        makeOwl(script, RDFFormat.JSONLD_PRETTY)
+    void makeOwl(File script, File destination, String ext) {
+        makeOwl(script, RDFFormat.JSONLD_PRETTY, destination, ext)
     }
 
-    void makeOwl(File script, RDFFormat format) {
+    void makeOwl(File script, RDFFormat format, File destination, String ext) {
         compile(script.text)
 
 //        Property similarTo = makeProperty('similarTo')
@@ -166,20 +166,29 @@ class VocabDsl {
                 if (!parent) {
                     throw new VocabularyException("Undefined parent class: ${element.parent}")
                 }
-                theClass.setSuperClass(parent)
+//                if (element == parent) {
+//                    println "Skipping parent: element == parent"
+//                }
+//                else if (element.equals(parent)) {
+//                    println "Skipping parent: element.equals(parent)"
+//                }
+//                else {
+//                    println "Superclass for ${element.name} is ${element.parent}"
+                    theClass.setSuperClass(parent)
+//                }
             }
             element.sameAs.each { resource ->
-                println "Same as $resource"
+//                println "Same as $resource"
                 theClass.addSameAs(ontology.createResource(resource))
             }
             element.metadata.each { String key, PropertyDelegate value ->
-                println "metadata $key -> ${value.type}"
+//                println "metadata $key -> ${value.type}"
                 Property property = makeMetadata(key)
                 property.addComment(ontology.createLiteral(value.description))
                 theClass.addProperty(property, value.type)
             }
             element.properties.each { String name, PropertyDelegate value ->
-                println "property $name -> ${value.type}"
+//                println "property $name -> ${value.type}"
                 Property property = makeProperty(element.name, name)
                 property.addComment(ontology.createLiteral(value.description))
                 theClass.addProperty(property, value.type)
@@ -189,9 +198,11 @@ class VocabDsl {
 
         }
 
-        String ext = format.lang.fileExtensions[0] ?: 'xml'
-        File file = new File("target/lapps-vocabulary.${ext}")
-        RDFDataMgr.write(new FileOutputStream(file), ontology, format)
+        File file = new File(destination, "lapps-vocabulary.${ext}")
+        OutputStream os = new FileOutputStream(file)
+        RDFDataMgr.write(os, ontology, format)
+        os.flush()
+        os.close()
         println "Wrote ${file.path}"
     }
 
@@ -247,6 +258,83 @@ class VocabDsl {
         return meta
     }
 
+    void makeDiscriminators(File script, File destination) {
+        List<String> order = ['annotation',
+                              'chunk',
+                              'paragraph',
+                              'sentence',
+                              'token',
+                              'pos',
+                              'coref',
+                              'ne',
+                              'person',
+                              'location',
+                              'date',
+                              'organization',
+                              'nchunk',
+                              'vchunk',
+                              'lemma',
+                              'lookup',
+                              'matches',
+                              'markable',
+                              'dependency-structure',
+                              'phrase-structure',
+                              'constituent',
+                              'dependency']
+
+        compile(script.text)
+        elements << new ElementDelegate(name:'Chunk', discriminator:'chunk', definition: "Any type of annotations that segments the primary data into chunks.", parent: 'annotation')
+        elements << new ElementDelegate(name:'Token#pos', discriminator: 'pos', definition: "Part-Of-Speech tag. The tagset used should be specified in metadata.", parent: 'annotation')
+        elements << new ElementDelegate(name:'Token#lemma', discriminator: 'lemma', definition: 'Base form of a word or token.', parent: 'annotation')
+        elements << new ElementDelegate(name:'Lookup', discriminator: 'lookup', definition: 'Dictionary based annotations. Used in GATE.', parent: 'annotation')
+        elements << new ElementDelegate(name:'Matches', discriminator: 'matches', definition: 'Definition needed.', parent: 'annotation')
+
+        File outputFile = new File(destination, "discriminators.txt")
+        outputFile.withWriter { writer ->
+            writer.println("bank(2) {")
+
+            order.each { String name ->
+                ElementDelegate element = elements.find { it.discriminator == name }
+                if (element) {
+                    writeDiscriminator(writer, element)
+                }
+                else {
+                    println "Missing element ${name}"
+                }
+            }
+            elements.each { ElementDelegate element ->
+                if (!order.contains(element.discriminator)) {
+                    writeDiscriminator(writer, element)
+                }
+                else {
+                    println "Order list contains ${element.name}"
+                }
+            }
+            writer.println("}")
+        }
+        println "Wrote ${outputFile.path}"
+    }
+
+    void writeDiscriminator(BufferedWriter writer, ElementDelegate element) {
+        if (!element.discriminator) {
+            println "Skipping ${element.name}"
+            return
+        }
+
+        println "Generating discriminator info for ${element.name}"
+        if (element.discriminator.contains('-')) {
+            writer.println "\t\"${element.discriminator}\" {"
+        }
+        else {
+            writer.println("\t${element.discriminator} {")
+        }
+        if (element.parent) {
+            writer.println("\t\tparents ${element.parent}")
+        }
+        writer.println("\t\turi vocab('${element.name}')")
+        writer.println("\t\tdescription \"${element.definition}\"")
+        writer.println("\t}")
+    }
 
     void makeIndexHtml() {
         File file = new File(INDEX_TEMPLATE)
@@ -275,10 +363,10 @@ class VocabDsl {
         return roots
     }
 
-    void makeJava(File scriptFile, String packageName, String className) {
+    void makeJava(File scriptFile, String packageName, String className, File destination) {
         compile(scriptFile.text)
 
-        File outFile = new File("target/${className}.java")
+        File outFile = new File(destination, "${className}.java")
         outFile.withPrintWriter { PrintWriter out ->
             out.println """
 /*
@@ -295,17 +383,17 @@ class ${className} {
 """
             elements.each { ElementDelegate e ->
                 out.println "\tpublic static final String ${e.name} = \"http://vocab.lappsgrid.org/${e.name}\";"
-                e.print(System.out)
+//                e.print(System.out)
             }
             out.println "}"
         }
         println "Wrote ${outFile.path}"
     }
 
-    void makeFeaturesJava(File scriptFile, String packageName)
+    void makeFeaturesJava(File scriptFile, String packageName, File destination)
     {
         compile(scriptFile.text)
-        File outFile = new File("Features.java")
+        File outFile = new File(destination, "Features.java")
         outFile.withPrintWriter { PrintWriter out ->
             out.println """/*
 * DO NOT EDIT THIS FILE.
@@ -370,6 +458,7 @@ class Features {
         cli.r(longOpt:'rdf', args:1, 'generates RDF/OWL ontology in the specifed format')
         cli.i(longOpt:'index', args:1, 'template used to generate the index.html page.')
         cli.j(longOpt:'java', args:1, 'generates a Java class containing URI defintions.')
+        cli.c(longOpt: 'discriminators', 'generated Discriminator DSL fragment.')
         cli.f(longOpt:'features', 'generates the Features.java with element property names.')
         cli.p(longOpt:'package', args:1, 'package name for the Java class.')
         cli.d(longOpt:'dsl', args:1, 'the input DSL specification.')
@@ -394,6 +483,21 @@ class Features {
             return
         }
 
+        File destination
+        if (params.o) {
+            destination = new File(params.o)
+        }
+        else {
+            destination = new File('target')
+        }
+
+        if (!destination.exists()) {
+            if (!destination.mkdirs()) {
+                println "Unable to create output directory ${destination.path}"
+                return
+            }
+        }
+
 //        else {
 //            File scriptFile = new File(args[0])
 //            File destination
@@ -412,7 +516,7 @@ class Features {
             if (params.p) {
                 packageName = params.p
             }
-            dsl.makeJava(scriptFile, packageName, params.j)
+            dsl.makeJava(scriptFile, packageName, params.j, destination)
             return
         }
         if (params.f) {
@@ -420,7 +524,11 @@ class Features {
             if (params.p) {
                     packageName = params.p
             }
-            dsl.makeFeaturesJava(scriptFile, packageName)
+            dsl.makeFeaturesJava(scriptFile, packageName, destination)
+            return
+        }
+        if (params.c) {
+            dsl.makeDiscriminators(scriptFile, destination)
             return
         }
         if (params.x) {
@@ -428,10 +536,14 @@ class Features {
             return
         }
         if (params.r) {
+            String ext = params.r
             RDFFormat format = RDFFormat.RDFXML_PRETTY
             switch (params.r) {
                 case 'owl':
                     format = RDFFormat.RDFXML_PRETTY
+                    break
+                case 'rdf':
+                    format = RDFFormat.RDFXML_PLAIN
                     break
                 case 'nq':
                     format = RDFFormat.NQ
@@ -450,15 +562,8 @@ class Features {
                     println "Use one of 'owl', 'nq', 'n3', or 'jsonld'."
                     return
             }
-            dsl.makeOwl(scriptFile, format)
+            dsl.makeOwl(scriptFile, format, destination, ext)
             return
-        }
-        File destination = new File(params.o)
-        if (!destination.exists()) {
-            if (!destination.mkdirs()) {
-                println "Unable to create output directory ${destination.path}"
-                return
-            }
         }
         dsl.INDEX_TEMPLATE = params.i
         dsl.FILE_TEMPLATE = params.h
