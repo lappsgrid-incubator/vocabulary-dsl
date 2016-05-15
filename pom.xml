@@ -6,15 +6,35 @@
     <parent>
         <groupId>org.anc.maven</groupId>
         <artifactId>groovy-parent-pom</artifactId>
-        <version>1.1.0</version>
+        <version>1.5.1</version>
     </parent>
     <groupId>org.anc.lapps</groupId>
     <artifactId>vocab-dsl</artifactId>
-    <version>1.1.1</version>
+    <version>1.2.0-SNAPSHOT</version>
     <name>LAPPS Vocabulary DSL</name>
     <description>DSL processor used to generate the LAPP Vocabulary web pages.</description>
+    <url>https://github.com/lappsgrid-incubator/vocabulary-dsl</url>
+    <licenses>
+        <license>
+            <name>The Apache License. Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+    <scm>
+        <url>https://github.com/lappsgrid-incubator/vocabulary-dsl</url>
+        <connection>git:scm:https://github.com/lappsgrid-incubator/vocabulary-dsl.git</connection>
+        <developerConnection>git:scm:https://github.com/lappsgrid-incubator/vocabulary-dsl.git</developerConnection>
+    </scm>
+    <issueManagement>
+        <url>https://github.com/lappsgrid-incubator/vocabulary-dsl/issues</url>
+        <system>GitHub issues</system>
+    </issueManagement>
+    <ciManagement>
+        <url>https://travis-ci.org/lappsgrid-incubator/vocabulary-dsl</url>
+        <system>travis</system>
+    </ciManagement>
     <properties>
-        <groovy.version>2.2.0</groovy.version>
+        <groovy.version>2.4.5</groovy.version>
         <ivy.version>2.2.0</ivy.version>
     </properties>
     <build>
@@ -22,6 +42,7 @@
             <plugin>
                 <groupId>org.anc.maven.plugins</groupId>
                 <artifactId>anc-maven-plugin</artifactId>
+                <version>1.0.7</version>
                 <configuration>
                     <package>org.anc.lapps.vocab.dsl</package>
                 </configuration>
@@ -90,8 +111,25 @@
             <artifactId>commons-cli</artifactId>
             <version>1.2</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>apache-jena-libs</artifactId>
+            <version>3.0.0</version>
+            <type>pom</type>
+        </dependency>
     </dependencies>
+    <!--
     <repositories>
+        <repository>
+            <id>apache-repo-releases</id>
+            <url>https://repository.apache.org/content/repositories/releases/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
         <repository>
             <id>anc-snapshots</id>
             <snapshots><enabled>true</enabled></snapshots>
@@ -119,4 +157,5 @@
             <url>http://www.anc.org:8080/nexus/content/repositories/releases</url>
         </pluginRepository>
     </pluginRepositories>
+    -->
 </project>

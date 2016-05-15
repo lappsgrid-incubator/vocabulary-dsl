@@ -6,6 +6,7 @@ package org.anc.lapps.vocab.dsl
 class ElementDelegate {
     String name
     String definition
+    String discriminator
     String parent
     List<String> sameAs = []
     List<String> similarTo = []
@@ -31,6 +32,10 @@ class ElementDelegate {
 
     void definition(String definition) {
         this.definition = definition
+    }
+
+    void discriminator(String discriminator) {
+        this.discriminator = discriminator
     }
 
     void sameAs(String... args) {
@@ -61,7 +66,14 @@ class ElementDelegate {
         print(System.out)
     }
 
-    void print(PrintStream writer) {
+    public String getUri() {
+        if (uri) {
+            return uri
+        }
+        return "http://vocab.lappsgrid.org/${name}"
+    }
+
+    void print(def writer) {
         writer.println "Element   : $name"
         if (parent) {
             writer.println "Parent    : $parent"
@@ -70,10 +82,11 @@ class ElementDelegate {
         writer.println "Same as   : ${sameAs.join(", ")}"
         writer.println "URI       : $uri"
         writer.println "Properties"
-        properties.each { name, value ->
+        properties.each { name, PropertyDelegate value ->
             writer.println "\t$name {"
             writer.println "\t\ttype: ${value.type}"
             writer.println "\t\tdescription: ${value.description}"
+            writer.println "\t\trequired: ${value.required}"
             writer.println "\t}"
         }
         writer.println()

@@ -31,6 +31,8 @@ install:
 	#cp target/lsd-$(VERSION).jar $(HOME)/bin
 	cp $(JAR) $(HOME)/bin
 	cat $(RES)/vocab | sed 's|__JAR__|$(HOME)/bin/vocab-$(VERSION).jar|' > $(HOME)/bin/vocab
+	cp $(JAR) ../../Lappsgrid/vocab
+	cp $(HOME)/bin/vocab ../../Lappsgrid/vocab
 	
 debug:
 	@echo "Current version is $(VERSION)"
