@@ -98,6 +98,10 @@ class VocabDsl {
         script.run()
     }
 
+    void dump(File file) {
+        compile(file.text)
+        elements.each { it.print() }
+    }
 
     void makeHtml() {
         // Create the template engine that will generate the HTML.
@@ -370,6 +374,7 @@ class Features {
         cli.p(longOpt:'package', args:1, 'package name for the Java class.')
         cli.d(longOpt:'dsl', args:1, 'the input DSL specification.')
         cli.o(longOpt:'output', args:1, 'output directory.')
+        cli.x(longOpt:'debug', 'prints a data dump rather than generating anything.')
         cli.'?'(longOpt:'help', 'displays this usage messages.')
 
         def params = cli.parse(args)
@@ -416,6 +421,10 @@ class Features {
                     packageName = params.p
             }
             dsl.makeFeaturesJava(scriptFile, packageName)
+            return
+        }
+        if (params.x) {
+            dsl.dump(scriptFile)
             return
         }
         if (params.r) {

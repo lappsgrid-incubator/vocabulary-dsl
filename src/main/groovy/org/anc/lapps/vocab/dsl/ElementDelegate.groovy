@@ -77,10 +77,11 @@ class ElementDelegate {
         writer.println "Same as   : ${sameAs.join(", ")}"
         writer.println "URI       : $uri"
         writer.println "Properties"
-        properties.each { name, value ->
+        properties.each { name, PropertyDelegate value ->
             writer.println "\t$name {"
             writer.println "\t\ttype: ${value.type}"
             writer.println "\t\tdescription: ${value.description}"
+            writer.println "\t\trequired: ${value.required}"
             writer.println "\t}"
         }
         writer.println()

@@ -1,2 +1,4 @@
+#!/bin/bash
 mvn package
-java -jar target/vocab-1.0.0-SNAPSHOT.jar src/test/resources/lapps.vocab
+VERSION=$(cat VERSION)
+java -jar target/vocab-$VERSION.jar src/test/resources/lapps.vocab
