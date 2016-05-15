@@ -405,7 +405,7 @@ class ${className} {
 
 package ${packageName};
 
-class Features {
+public class Features {
 \tprivate Features() { }
 """
             elements.each { ElementDelegate e ->
