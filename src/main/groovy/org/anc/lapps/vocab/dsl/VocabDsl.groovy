@@ -379,11 +379,11 @@ class VocabDsl {
  */
 package ${packageName};
 
-class ${className} {
+public class ${className} {
     private ${className}() { }
 """
-            elements.each { ElementDelegate e ->
-                out.println "\tpublic static final String ${e.name} = \"http://vocab.lappsgrid.org/${e.name}\";"
+            elements.sort { a,b -> a.name.compareTo(b.name) }.each { ElementDelegate e ->
+                out.println "\tpublic static final String ${e.name.toUpperCase()} = \"http://vocab.lappsgrid.org/${e.name}\";"
 //                e.print(System.out)
             }
             out.println "}"
