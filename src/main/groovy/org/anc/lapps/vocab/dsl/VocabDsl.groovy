@@ -379,11 +379,16 @@ class VocabDsl {
  */
 package ${packageName};
 
-class ${className} {
+/** @deprecated Use the org.lappsgrid.discriminator.Discriminators class instead. */
+@Deprecated
+public class ${className} {
     private ${className}() { }
 """
-            elements.each { ElementDelegate e ->
-                out.println "\tpublic static final String ${e.name} = \"http://vocab.lappsgrid.org/${e.name}\";"
+            def toSnakeCase = { String name ->
+                name.replaceAll("([^_A-Z])([A-Z])", '$1_$2').toUpperCase()
+            }
+            elements.sort { a,b -> a.name.compareTo(b.name) }.each { ElementDelegate e ->
+                out.println "\tpublic static final String ${toSnakeCase(e.name) } = \"http://vocab.lappsgrid.org/${e.name}\";"
 //                e.print(System.out)
             }
             out.println "}"
