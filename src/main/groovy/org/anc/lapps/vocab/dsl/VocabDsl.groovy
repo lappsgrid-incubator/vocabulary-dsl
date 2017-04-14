@@ -21,7 +21,11 @@ import org.anc.template.TemplateEngine
 class VocabDsl {
     static final String VOCAB = 'http://vocab.lappsgrid.org/'
     static final String EXTENSION = ".vocab"
+
+    // The template used to generate the HTML page for a single Vocabulary element.
     String FILE_TEMPLATE = "src/test/resources/template.groovy"
+
+    // The template used to generate the main vocabulary page.
     String INDEX_TEMPLATE = "src/test/resources/index.groovy"
 
     // Selects the templating engine to use.  Choices are the MarkupBuilderTemplateEngine
@@ -96,6 +100,7 @@ class VocabDsl {
         script.binding.setVariable("args", [:])
         script.metaClass = getMetaClass(script.class, shell)
         script.run()
+        println "Compiled vocabulary version ${bindings.version}"
     }
 
     void dump(File file) {
@@ -106,6 +111,7 @@ class VocabDsl {
     void makeHtml() {
         // Create the template engine that will generate the HTML.
         TemplateEngine engine = new MarkupBuilderTemplateEngine(new File(FILE_TEMPLATE))
+        String version = bindings.version ?: '99.0.0'
         elements.each { element ->
             // Walk up the hierarchy and record the names of
             // all ancestors.
@@ -117,13 +123,13 @@ class VocabDsl {
                 parent = delegate.parent
             }
             // params is the data model to be passed to the template
-            def params = [ element:element, elements:elementIndex, parents:parents ]
+            def params = [ element:element, elements:elementIndex, parents:parents, version:bindings.getVariable('version') ]
             // file is where the generated HTML will be written.
             File file = new File(destination, "${element.name}.html")
             // Call the template to generate the HTML from the model and
             // write it to the file.
             file.text = engine.generate(params)
-            println "Wrote ${file.path}"
+            println "Wrote ${file.path} v${bindings.version}"
         }
     }
 
@@ -178,23 +184,18 @@ class VocabDsl {
 //                }
             }
             element.sameAs.each { resource ->
-//                println "Same as $resource"
                 theClass.addSameAs(ontology.createResource(resource))
             }
             element.metadata.each { String key, PropertyDelegate value ->
-//                println "metadata $key -> ${value.type}"
                 Property property = makeMetadata(key)
                 property.addComment(ontology.createLiteral(value.description))
                 theClass.addProperty(property, value.type)
             }
             element.properties.each { String name, PropertyDelegate value ->
-//                println "property $name -> ${value.type}"
                 Property property = makeProperty(element.name, name)
                 property.addComment(ontology.createLiteral(value.description))
                 theClass.addProperty(property, value.type)
             }
-//            element.similarTo.each { resource ->
-//            }
 
         }
 
@@ -333,6 +334,9 @@ class VocabDsl {
         }
         writer.println("\t\turi vocab('${element.name}')")
         writer.println("\t\tdescription \"${element.definition}\"")
+        if (element.deprecated) {
+            writer.println("\t\tdeprecated \"${element.deprecated}\"")
+        }
         writer.println("\t}")
     }
 
@@ -342,7 +346,7 @@ class VocabDsl {
             throw new FileNotFoundException("Unable to find the index.groovy template.")
         }
         TemplateEngine template = new MarkupBuilderTemplateEngine(file)
-        String html = template.generate(roots: getTrees())
+        String html = template.generate(roots: getTrees(), version:bindings.version)
         File destination = new File(destination, 'index.html')
         destination.text = html
         println "Wrote ${destination.path}"
