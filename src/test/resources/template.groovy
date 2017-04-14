@@ -4,6 +4,7 @@
  * 1. element : the ElementDelegate for the page being generated.
  * 2. elements: a HashMap used to map element names to their ElementDelegate object.
  * 3. parents: the names all parents of this element.
+ * 4. version: the current vocabulary version.
  */
 html {
     head {
@@ -15,6 +16,7 @@ html {
             div(id:'intro') {
                 div(id:'pageHeader') {
                     h1 "LAPPS Web Service Exchange Vocabulary"
+                    h2 "Version $version"
                 }
             }
             div(id:'mainContent') {
@@ -55,6 +57,12 @@ html {
                     tr {
                         td { b "URI" }
                         td element.uri
+                    }
+                    if (element.deprecated) {
+                        tr {
+                            td { b "Deprecated"}
+                            td element.deprecated
+                        }
                     }
                 }
 

@@ -6,6 +6,7 @@
 schema="http://schema.org"
 vocab="http//vocab.lappsgrid.org"
 iso="http://www.isocat.org/datcat"
+version='1.1.0'
 
 element {
 	name "Thing"
@@ -22,7 +23,7 @@ element {
 element {
 	name "Annotation"
 	parent "Thing"
-	definition "Linguistic information added to a word, phrase, clause, sentence, text, or a relation among them."
+	definition "Linguistic information added to a word, phrase, clause, sentence, document, etc., or a relation among them."
 	sameAs "$iso/DC-2318"
 	metadata {
 	    producer {
@@ -38,20 +39,28 @@ element {
 		id {
 			type "String"
 			description "A unique identifier associated with the annotation."
+			required true
 		}
 	}
 }
 
 element {
-	name "Span"
+	name "Region"
 	parent "Annotation"
-	definition """An annotation over a span of text. A <b>Span</b> may be defined by <em>start</em>
-	 and <em>end</em> offsets or by linking to one or more <link>Token</link> annotations with the <em>targets</em> 
+	definition """An annotation over a region in primary data. A <b>Region</b> may be defined by pointing directly into primary data
+	(for text, using <em>start</em> and
+	<em>end</em> offsets) or
+	by linking to one or more other <link>Annotation</link>s with the <em>targets</em>
 	 property."""
 	properties {
 		targets {
 			type "List of IDs"
-			description "ID values of the annotations that make up this span in the primary data."
+			description """IDs of a sequence of annotations covering the region of primary data
+			referred to by this annotation. Used as an alternative to <em>start</em>
+			and <em>end</em> to point to component annotations (e.g., a token sequence)
+			rather than directly into primary data, or to link two or more annotations
+			(e.g., in a coreference annotation).
+			"""
 		}
 		start {
 			type "Integer"
@@ -65,8 +74,63 @@ element {
 }
 
 element {
+	name 'Relation'
+	parent 'Annotation'
+	definition 'Definition needed.'
+	properties {
+		label {
+			type "String or URI"
+			description "A category label."
+			required true
+		}
+	}
+}
+
+element {
+	name 'GenericRelation'
+	parent 'Relation'
+	definition 'Any relation involving one or more arguments.'
+	properties {
+		relation {
+			type "ID"
+			description 'The head of the relation.'
+			required true
+		}
+		arguments {
+			type 'List of IDs'
+			description 'The arguments of the relation.'
+			required true
+		}
+	}
+}
+
+element {
+	name 'SemanticRole'
+	parent 'Relation'
+	definition 'The underlying relationship that a participant has with the main predicate in a clause.'
+	properties {
+		head {
+			type "ID"
+			description 'The predicate.'
+			required true
+		}
+		argument {
+			type 'ID'
+			description 'The element that fulfills the role relative to the predicate.'
+			required true
+		}
+	}
+}
+
+element {
+	name "Paragraph"
+	parent "Region"
+	definition "Definition needed."
+}
+
+element {
 	name "Sentence"
-	parent "Span"
+	parent "Region"
 	definition "A sequence of words capable of standing alone to make an assertion, ask a question, or give a command, usually consisting of a subject and a predicate containing a finite verb. "
 	sameAs "$iso/DC-1386"
 	properties {
@@ -79,13 +143,13 @@ element {
 
 element {
 	name 'NounChunk'
-	parent 'Span'
-	definition "The initial portion of a non-recursive noun phrase up to the head, including determiners but not including postmodifying prepositional phrases or clauses." 
+	parent 'Region'
+	definition "The initial portion of a non-recursive noun phrase up to the head, including determiners but not including postmodifying prepositional phrases or clauses."
 }
 
 element {
 	name 'VerbChunk'
-	parent 'Span'
+	parent 'Region'
 	definition "Non-recursive verb groups, which include modals, auxiliary verbs, and medial adverbs, and end at the head verb or predicate adjective."
 	properties {
 		vcType {
@@ -102,16 +166,22 @@ element {
 		}
 		neg {
 			type"string or URI"
-			description "Indicates whether or not the verb is negated. Values include YES, NO." 
+			description "Indicates whether or not the verb is negated. Values include YES, NO."
 		}
 	}
 }
-	
+
 element {
     name "NamedEntity"
-    parent "Span"
+    parent "Region"
     definition "A phrase that clearly identifies an individual from others that have similar attributes, such as the name of a person, organization, location, artifact, etc. as well as temporal expressions."
     sameAs "$iso/DC-2275"
+    properties {
+    	category {
+    		type "String or URI"
+    		description "The type of named entity. Typically one of DATE, PERSON, ORGANIZATION, or LOCATION."
+    	}
+    }
 }
 
 element {
@@ -120,12 +190,16 @@ element {
     definition "A reference to a date or period."
     similarTo "http://schema.org/Date"
     sameAs "$iso/DC-6123"
+    deprecated '''Please use NamedEntity with an appropriate @type attribute. This
+        annotation type will be removed in a future version of the vocabulary.
+        '''
     properties {
         dateType {
             type "String or URI"
             description "Sub-type information such as date, datetime, time, etc. Ideally a URI referencing a pre-defined descriptor."
         }
     }
+    deprecated "Will be removed in version 2.0.0"
 }
 
 element {
@@ -133,6 +207,9 @@ element {
     parent "NamedEntity"
     definition "Name of politically or geographically defined location (cities, provinces, countries, international regions, bodies of water, mountains,named regions, etc.)"
     sameAs "$iso/DC-4339", "$schema/Location"
+    deprecated '''Please use NamedEntity with an appropriate @type attribute. This
+        annotation type will be removed in a future version of the vocabulary.
+        '''
     properties {
         locType {
             type "String or URI"
@@ -146,6 +223,9 @@ element {
     parent "NamedEntity"
     definition "A named corporate, governmental, educational, religious, political, or other organizational entity."
     sameAs "$iso/DC-2979", "$schema/Organization"
+    deprecated '''Please use NamedEntity with an appropriate @type attribute. This
+        annotation type will be removed in a future version of the vocabulary.
+        '''
     properties {
         orgType {
             type "String or URI"
@@ -160,6 +240,9 @@ element {
     definition "The name of a person or family."
     sameAs "$iso/DC-2978"
     similarTo "$schema/Person"
+    deprecated '''Please use NamedEntity with an appropriate @type attribute. This
+        annotation type will be removed in a future version of the vocabulary.
+        '''
     properties {
         gender {
             type "String or URI"
@@ -170,7 +253,7 @@ element {
 
 element {
     name "Token"
-    parent "Span"
+    parent "Region"
     definition "A string of one or more characters that serves as an indivisible unit for the purposes of morpho-syntactic labeling (part of speech tagging)."
     similarTo "$iso/DC-1403"
     metadata {
@@ -200,6 +283,10 @@ element {
             type "Integer"
             description "The length of the token"
         }
+        word {
+        	type "String"
+        	description "The surface string in the primary data covered by this Token."
+        }
     }
 }
 
@@ -211,18 +298,19 @@ element {
 		mentions {
 			type "List of IDs"
 			description "A list of identifiers. Each identifier points to an object of type <link>Annotation</link>, or a subtype thereof."
+			required true
 		}
 		representative {
-			type "String"
-			description "An identifier that point to the representative item in the coreference chain."
+			type "ID"
+			description "An identifier that points to the representative item in the coreference chain."
 		}
 	}
 }
 
 element {
 	name "Markable"
-	parent "Span"
-	definition "Annotation type used if the coreferenced item is not already wrapped in a suitable annotation type that can be referenced."
+	parent "Region"
+	definition "Annotation type used if the referenced object is not already wrapped in a suitable annotation type that can be referenced."
 }
 
 element {
@@ -231,35 +319,39 @@ element {
 	definition "A container for phrase structure information."
 	metadata {
 		categorySet {
-			type "URI"
+			type "String or URI"
 			description "The URI for the category set."
 		}
 	}
 	properties {
 		constituents {
 			type "Set of IDs"
-			description "The set of IDs for the <link>Constituent</link> annotations."
+			description "The set of IDs for all of the <link>Constituent</link>s in the parse tree."
+			required true
+		}
+		root {
+			type "ID"
+			description "The ID for the <link>Constituent</link> or <link>Token<.link> that is the top of the tree."
+			required true
 		}
 	}
 }
 
 element {
 	name "Constituent"
-	parent "Span"
+	parent "Relation"
 	definition "A constituent of a <link>PhraseStructure</link> (parse tree)."
 	uri "$vocab/Constituent"
 	properties {
-		label {
-			type "String or URI"
-			description "A category label."
-		}
 		parent {
 			type "ID"
 			description "The parent (if any) of this constituent."
+			required true
 		}
 		children {
 			type "List of IDs"
 			description "The children (if any) of this constituent. The children are typically other Constituent annotations or <link>Token</link>s."
+			required true
 		}
 	}
 }
@@ -270,7 +362,7 @@ element {
 	parent "Annotation"
 	metadata {
 		dependencySet {
-			type "URI"
+			type "String or URI"
 			description "The URI for a particular set of dependency labels."
 		}
 	}
@@ -282,6 +374,7 @@ element {
 		dependencies {
 			type "Set of IDs"
 			description "The ID values of a set of annotations of type <tt>Dependency</tt>"
+			required true
 		}
 	}
 }
@@ -289,16 +382,18 @@ element {
 element {
 	name "Dependency"
 	definition "A dependency in a <link>DependencyStructure</link>"
-	parent "Annotation"
+	parent "Relation"
 	properties {
 		governor {
 			type "ID"
 			description "The governor of the dependency."
+			required true
 		}
 		dependent {
 			type "ID"
 			description "The dependent."
-		}		
+			required true
+		}
 	}
 }
 
@@ -310,6 +405,7 @@ element {
         id {
             type "String"
             description "A unique identifier associated with the document."
+            required true
         }
         source {
             type "String or URI"
@@ -322,7 +418,7 @@ element {
         encoding {
             type "String or URI"
             description """The physical or digital manifestation of the resource. Encoding may be used
-                to determine the software, hardware or other equipment needed to display or operate the
+                to determine the software, hardware or other equipment  to display or operate the
                 resource. Recommended best practice is to select a value from the list of Internet Media
                 Types [http://www.iana.org/ assignments/media-types/] defining computer media formats).
                 <br/>
@@ -352,6 +448,6 @@ element {
 
 element {
     name "AudioDocument"
-    definition "Any electronic media content consisting of text (language). A text document may consist of several physical computer files."
+    definition "Any electronic media content consisting of audio (language). An audio document may consist of several physical computer files."
     parent "Document"
 }

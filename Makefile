@@ -30,7 +30,7 @@ clean-html:
 install:
 	#cp target/lsd-$(VERSION).jar $(HOME)/bin
 	cp $(JAR) $(HOME)/bin
-	cat $(RES)/vocab | sed 's|__JAR__|$(HOME)/bin/vocab-$(VERSION).jar|' > $(HOME)/bin/vocab
+	cat $(RES)/vocab | sed 's|__JAR__|vocab-$(VERSION).jar|' > $(HOME)/bin/vocab
 	cp $(JAR) ../../Lappsgrid/vocab
 	cp $(HOME)/bin/vocab ../../Lappsgrid/vocab
 	
@@ -47,8 +47,8 @@ release:
 	mkdir $(DIST)
 	cat $(RES)/vocab | sed 's|__JAR__|vocab-$(VERSION).jar|' > $(DIST)/vocab
 	chmod u+x $(DIST)/vocab
-	cp $(RES)/lapps.vocab $(DIST)
-	cp $(RES)/*.groovy $(DIST)
+	#cp $(RES)/lapps.vocab $(DIST)
+	#cp $(RES)/*.groovy $(DIST)
 	cp -r $(HTML) $(DIST)
 	cp $(JAR) $(DIST)
 	cd target ; zip -r vocab vocab ; cp vocab.zip $(NAME).zip ; mv vocab.zip vocab-latest.zip
