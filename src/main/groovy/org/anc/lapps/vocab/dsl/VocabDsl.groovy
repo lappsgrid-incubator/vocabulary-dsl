@@ -290,6 +290,12 @@ class VocabDsl {
         elements << new ElementDelegate(name:'Lookup', discriminator: 'lookup', definition: 'Dictionary based annotations. Used in GATE.', parent: 'annotation')
         elements << new ElementDelegate(name:'Matches', discriminator: 'matches', definition: 'Definition needed.', parent: 'annotation')
 
+        elements.each {
+            if (!it.discriminator) {
+                it.discriminator = getDiscriminator(it)
+            }
+        }
+
         File outputFile = new File(destination, "discriminators.txt")
         outputFile.withWriter { writer ->
             writer.println("bank(2) {")
@@ -304,30 +310,38 @@ class VocabDsl {
                 }
             }
             elements.each { ElementDelegate element ->
+//                String discriminator = getDiscriminator(element)
                 if (!order.contains(element.discriminator)) {
                     writeDiscriminator(writer, element)
                 }
-                else {
-                    println "Order list contains ${element.name}"
-                }
+//                else {
+//                    println "Order list contains ${element.name}"
+//                }
             }
             writer.println("}")
         }
         println "Wrote ${outputFile.path}"
     }
 
-    void writeDiscriminator(BufferedWriter writer, ElementDelegate element) {
-        if (!element.discriminator) {
-            println "Skipping ${element.name}"
-            return
+    String getDiscriminator(ElementDelegate element) {
+        if (element.discriminator) {
+            return element.discriminator
         }
+        return element.name.replaceAll("([a-z])([A-Z])", '$1-$2').toLowerCase()
+    }
 
+    void writeDiscriminator(BufferedWriter writer, ElementDelegate element) {
+//        if (!element.discriminator) {
+//            println "Skipping ${element.name}"
+//            return
+//        }
+        String discriminator = getDiscriminator(element)
         println "Generating discriminator info for ${element.name}"
-        if (element.discriminator.contains('-')) {
-            writer.println "\t\"${element.discriminator}\" {"
+        if (discriminator.contains('-')) {
+            writer.println "\t\"${discriminator}\" {"
         }
         else {
-            writer.println("\t${element.discriminator} {")
+            writer.println("\t${discriminator} {")
         }
         if (element.parent) {
             writer.println("\t\tparents ${element.parent}")
@@ -383,8 +397,6 @@ class VocabDsl {
  */
 package ${packageName};
 
-/** @deprecated Use the org.lappsgrid.discriminator.Discriminators class instead. */
-@Deprecated
 public class ${className} {
     private ${className}() { }
 """
@@ -392,6 +404,9 @@ public class ${className} {
                 name.replaceAll("([^_A-Z])([A-Z])", '$1_$2').toUpperCase()
             }
             elements.sort { a,b -> a.name.compareTo(b.name) }.each { ElementDelegate e ->
+                if (e.deprecated) {
+                    out.println '@Deprecated'
+                }
                 out.println "\tpublic static final String ${toSnakeCase(e.name) } = \"http://vocab.lappsgrid.org/${e.name}\";"
 //                e.print(System.out)
             }
@@ -469,10 +484,10 @@ public class Features {
         cli.r(longOpt:'rdf', args:1, 'generates RDF/OWL ontology in the specifed format')
         cli.i(longOpt:'index', args:1, 'template used to generate the index.html page.')
         cli.j(longOpt:'java', args:1, 'generates a Java class containing URI defintions.')
-        cli.c(longOpt: 'discriminators', 'generated Discriminator DSL fragment.')
+        cli.d(longOpt: 'discriminators', 'generated Discriminator DSL fragment.')
         cli.f(longOpt:'features', 'generates the Features.java with element property names.')
         cli.p(longOpt:'package', args:1, 'package name for the Java class.')
-        cli.d(longOpt:'dsl', args:1, 'the input DSL specification.')
+//        cli.d(longOpt:'dsl', args:1, 'the input DSL specification.')
         cli.o(longOpt:'output', args:1, 'output directory.')
         cli.x(longOpt:'debug', 'prints a data dump rather than generating anything.')
         cli.'?'(longOpt:'help', 'displays this usage messages.')
@@ -520,8 +535,13 @@ public class Features {
 //            }
 //            new VocabDsl().run(scriptFile, destination)
 //        }
+        List<String> files = params.arguments()
+        if (files.size() == 0) {
+            println "No vocabulary specified."
+            return
+        }
         VocabDsl dsl = new VocabDsl()
-        File scriptFile = new File(params.d)
+        File scriptFile = new File(files[0])
         if (params.j) {
             String packageName = "org.lappsgrid.discrimintor"
             if (params.p) {
@@ -538,7 +558,7 @@ public class Features {
             dsl.makeFeaturesJava(scriptFile, packageName, destination)
             return
         }
-        if (params.c) {
+        if (params.d) {
             dsl.makeDiscriminators(scriptFile, destination)
             return
         }
