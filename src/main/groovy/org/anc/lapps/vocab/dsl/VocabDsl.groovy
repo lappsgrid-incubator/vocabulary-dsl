@@ -405,7 +405,13 @@ public class ${className} {
             }
             elements.sort { a,b -> a.name.compareTo(b.name) }.each { ElementDelegate e ->
                 if (e.deprecated) {
-                    out.println '@Deprecated'
+                    String message = e.deprecated
+                            .replaceAll(~/<\/?link>/, '')
+                            .tokenize('.')[0]
+                            .replaceAll('\n', ' ')
+                            .replaceAll('\t', ' ')
+                            .replaceAll(~/  +/, ' ')
+                    out.println "\t@Deprecated('${message}.')"
                 }
                 out.println "\tpublic static final String ${toSnakeCase(e.name) } = \"http://vocab.lappsgrid.org/${e.name}\";"
 //                e.print(System.out)

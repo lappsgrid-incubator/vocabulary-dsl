@@ -55,7 +55,7 @@ release:
 	echo "Release ready."
 	
 upload:
-	if [ -e target/$NAME.zip ] ; then scp -P 22022 target/$(NAME).zip suderman@anc.org:/home/www/anc/downloads ; fi
+	if [ -e target/$(NAME).zip ] ; then scp -P 22022 target/$(NAME).zip suderman@anc.org:/home/www/anc/downloads ; fi
 	if [ -e target/vocab-latest.zip ] ; then scp -P 22022 target/vocab-latest.zip suderman@anc.org:/home/www/anc/downloads ; fi
 	echo "Release complete."
 
