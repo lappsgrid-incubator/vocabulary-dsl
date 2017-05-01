@@ -31,8 +31,8 @@ install:
 	#cp target/lsd-$(VERSION).jar $(HOME)/bin
 	cp $(JAR) $(HOME)/bin
 	cat $(RES)/vocab | sed 's|__JAR__|vocab-$(VERSION).jar|' > $(HOME)/bin/vocab
-	cp $(JAR) ../../Lappsgrid/vocab
-	cp $(HOME)/bin/vocab ../../Lappsgrid/vocab
+	cp $(JAR) ../../Lappsgrid/vocab/bin
+	cp $(HOME)/bin/vocab ../../Lappsgrid/vocab/bin
 	
 debug:
 	@echo "Current version is $(VERSION)"
@@ -57,5 +57,5 @@ release:
 upload:
 	if [ -e target/$(NAME).zip ] ; then scp -P 22022 target/$(NAME).zip suderman@anc.org:/home/www/anc/downloads ; fi
 	if [ -e target/vocab-latest.zip ] ; then scp -P 22022 target/vocab-latest.zip suderman@anc.org:/home/www/anc/downloads ; fi
-	echo "Release complete."
+	echo "Upload complete."
 

@@ -255,6 +255,19 @@ class VocabDsl {
             elementIndex[element.name] = element
         }
 
+        meta.methodMissing = { String name,  args ->
+            if (args.size() != 1 || !(args[0] instanceof Closure) ) {
+                throw new MissingMethodException(name, java.lang.Object.class, args)
+            }
+            Closure cl = (Closure) args[0]
+            ElementDelegate element = new ElementDelegate()
+            element.name = name
+            cl.delegate = element
+            cl()
+            elements << element
+            elementIndex[name] = element
+        }
+
         meta.initialize()
         return meta
     }
@@ -296,9 +309,16 @@ class VocabDsl {
             }
         }
 
-        File outputFile = new File(destination, "discriminators.txt")
+        File outputFile = new File(destination, "vocabulary.config")
         outputFile.withWriter { writer ->
-            writer.println("bank(2) {")
+            boolean close = false
+            if (bindings.version == null || bindings.version == '1.0.0') {
+                writer.println("bank(2) {")
+                close = true
+            }
+            else {
+                writer.println "version='${bindings.version}'"
+            }
 
             order.each { String name ->
                 ElementDelegate element = elements.find { it.discriminator == name }
@@ -318,7 +338,9 @@ class VocabDsl {
 //                    println "Order list contains ${element.name}"
 //                }
             }
-            writer.println("}")
+            if (close) {
+                writer.println("}")
+            }
         }
         println "Wrote ${outputFile.path}"
     }
@@ -338,26 +360,31 @@ class VocabDsl {
         String discriminator = getDiscriminator(element)
         println "Generating discriminator info for ${element.name}"
         if (discriminator.contains('-')) {
-            writer.println "\t\"${discriminator}\" {"
+            writer.println "\"${discriminator}\" {"
         }
         else {
-            writer.println("\t${discriminator} {")
+            writer.println("${discriminator} {")
         }
-        if (element.parent) {
-            writer.println("\t\tparents ${element.parent}")
-        }
-        writer.println("\t\turi vocab('${element.name}')")
-        writer.println("\t\tdescription \"${element.definition}\"")
+//        if (element.parent) {
+//            writer.println("\tparents ${element.parent}")
+//        }
+        //writer.println("\turi 'http://vocab.lappsgrid.org/${element.name}'")
+        writer.println("\turi vocab('${element.name}')")
+        writer.println("\tdescription \"${normalize(element.definition)}\"")
         if (element.deprecated) {
-            writer.println("\t\tdeprecated \"${element.deprecated}\"")
+            writer.println("\tdeprecated \"${normalize(element.deprecated)}\"")
         }
-        writer.println("\t}")
+        writer.println("}")
+    }
+
+    String normalize(String s) {
+        return s.replaceAll(~/[\n\t]/, ' ').replaceAll(~/\s\s+/, ' ')
     }
 
     void makeIndexHtml() {
         File file = new File(INDEX_TEMPLATE)
         if (!file.exists()) {
-            throw new FileNotFoundException("Unable to find the index.groovy template.")
+            throw new FileNotFoundException("Unable to find the index template.")
         }
         TemplateEngine template = new MarkupBuilderTemplateEngine(file)
         String html = template.generate(roots: getTrees(), version:bindings.version)
@@ -411,7 +438,10 @@ public class ${className} {
                             .replaceAll('\n', ' ')
                             .replaceAll('\t', ' ')
                             .replaceAll(~/  +/, ' ')
-                    out.println "\t@Deprecated('${message}.')"
+                    out.println "\t/**"
+                    out.println "\t * @deprecated $message"
+                    out.println "\t */"
+                    out.println "\t@Deprecated"
                 }
                 out.println "\tpublic static final String ${toSnakeCase(e.name) } = \"http://vocab.lappsgrid.org/${e.name}\";"
 //                e.print(System.out)
