@@ -71,6 +71,7 @@ html {
             div(id: 'intro') {
                 div(id: 'pageHeader') {
                     h1 "LAPPS Web Service Exchange Vocabulary"
+                    h2 "Version: $version"
                 }
             }
         }

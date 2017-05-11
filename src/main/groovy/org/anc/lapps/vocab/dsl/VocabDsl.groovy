@@ -21,7 +21,11 @@ import org.anc.template.TemplateEngine
 class VocabDsl {
     static final String VOCAB = 'http://vocab.lappsgrid.org/'
     static final String EXTENSION = ".vocab"
+
+    // The template used to generate the HTML page for a single Vocabulary element.
     String FILE_TEMPLATE = "src/test/resources/template.groovy"
+
+    // The template used to generate the main vocabulary page.
     String INDEX_TEMPLATE = "src/test/resources/index.groovy"
 
     // Selects the templating engine to use.  Choices are the MarkupBuilderTemplateEngine
@@ -96,6 +100,7 @@ class VocabDsl {
         script.binding.setVariable("args", [:])
         script.metaClass = getMetaClass(script.class, shell)
         script.run()
+        println "Compiled vocabulary version ${bindings.version}"
     }
 
     void dump(File file) {
@@ -106,6 +111,7 @@ class VocabDsl {
     void makeHtml() {
         // Create the template engine that will generate the HTML.
         TemplateEngine engine = new MarkupBuilderTemplateEngine(new File(FILE_TEMPLATE))
+        String version = bindings.version ?: '99.0.0'
         elements.each { element ->
             // Walk up the hierarchy and record the names of
             // all ancestors.
@@ -117,13 +123,13 @@ class VocabDsl {
                 parent = delegate.parent
             }
             // params is the data model to be passed to the template
-            def params = [ element:element, elements:elementIndex, parents:parents ]
+            def params = [ element:element, elements:elementIndex, parents:parents, version:bindings.getVariable('version') ]
             // file is where the generated HTML will be written.
             File file = new File(destination, "${element.name}.html")
             // Call the template to generate the HTML from the model and
             // write it to the file.
             file.text = engine.generate(params)
-            println "Wrote ${file.path}"
+            println "Wrote ${file.path} v${bindings.version}"
         }
     }
 
@@ -178,23 +184,18 @@ class VocabDsl {
 //                }
             }
             element.sameAs.each { resource ->
-//                println "Same as $resource"
                 theClass.addSameAs(ontology.createResource(resource))
             }
             element.metadata.each { String key, PropertyDelegate value ->
-//                println "metadata $key -> ${value.type}"
                 Property property = makeMetadata(key)
                 property.addComment(ontology.createLiteral(value.description))
                 theClass.addProperty(property, value.type)
             }
             element.properties.each { String name, PropertyDelegate value ->
-//                println "property $name -> ${value.type}"
                 Property property = makeProperty(element.name, name)
                 property.addComment(ontology.createLiteral(value.description))
                 theClass.addProperty(property, value.type)
             }
-//            element.similarTo.each { resource ->
-//            }
 
         }
 
@@ -254,6 +255,19 @@ class VocabDsl {
             elementIndex[element.name] = element
         }
 
+        meta.methodMissing = { String name,  args ->
+            if (args.size() != 1 || !(args[0] instanceof Closure) ) {
+                throw new MissingMethodException(name, java.lang.Object.class, args)
+            }
+            Closure cl = (Closure) args[0]
+            ElementDelegate element = new ElementDelegate()
+            element.name = name
+            cl.delegate = element
+            cl()
+            elements << element
+            elementIndex[name] = element
+        }
+
         meta.initialize()
         return meta
     }
@@ -289,9 +303,22 @@ class VocabDsl {
         elements << new ElementDelegate(name:'Lookup', discriminator: 'lookup', definition: 'Dictionary based annotations. Used in GATE.', parent: 'annotation')
         elements << new ElementDelegate(name:'Matches', discriminator: 'matches', definition: 'Definition needed.', parent: 'annotation')
 
-        File outputFile = new File(destination, "discriminators.txt")
+        elements.each {
+            if (!it.discriminator) {
+                it.discriminator = getDiscriminator(it)
+            }
+        }
+
+        File outputFile = new File(destination, "vocabulary.config")
         outputFile.withWriter { writer ->
-            writer.println("bank(2) {")
+            boolean close = false
+            if (bindings.version == null || bindings.version == '1.0.0') {
+                writer.println("bank(2) {")
+                close = true
+            }
+            else {
+                writer.println "version='${bindings.version}'"
+            }
 
             order.each { String name ->
                 ElementDelegate element = elements.find { it.discriminator == name }
@@ -303,46 +330,64 @@ class VocabDsl {
                 }
             }
             elements.each { ElementDelegate element ->
+//                String discriminator = getDiscriminator(element)
                 if (!order.contains(element.discriminator)) {
                     writeDiscriminator(writer, element)
                 }
-                else {
-                    println "Order list contains ${element.name}"
-                }
+//                else {
+//                    println "Order list contains ${element.name}"
+//                }
             }
-            writer.println("}")
+            if (close) {
+                writer.println("}")
+            }
         }
         println "Wrote ${outputFile.path}"
     }
 
-    void writeDiscriminator(BufferedWriter writer, ElementDelegate element) {
-        if (!element.discriminator) {
-            println "Skipping ${element.name}"
-            return
+    String getDiscriminator(ElementDelegate element) {
+        if (element.discriminator) {
+            return element.discriminator
         }
+        return element.name.replaceAll("([a-z])([A-Z])", '$1-$2').toLowerCase()
+    }
 
+    void writeDiscriminator(BufferedWriter writer, ElementDelegate element) {
+//        if (!element.discriminator) {
+//            println "Skipping ${element.name}"
+//            return
+//        }
+        String discriminator = getDiscriminator(element)
         println "Generating discriminator info for ${element.name}"
-        if (element.discriminator.contains('-')) {
-            writer.println "\t\"${element.discriminator}\" {"
+        if (discriminator.contains('-')) {
+            writer.println "\"${discriminator}\" {"
         }
         else {
-            writer.println("\t${element.discriminator} {")
+            writer.println("${discriminator} {")
         }
-        if (element.parent) {
-            writer.println("\t\tparents ${element.parent}")
+//        if (element.parent) {
+//            writer.println("\tparents ${element.parent}")
+//        }
+        //writer.println("\turi 'http://vocab.lappsgrid.org/${element.name}'")
+        writer.println("\turi vocab('${element.name}')")
+        writer.println("\tdescription \"${normalize(element.definition)}\"")
+        if (element.deprecated) {
+            writer.println("\tdeprecated \"${normalize(element.deprecated)}\"")
         }
-        writer.println("\t\turi vocab('${element.name}')")
-        writer.println("\t\tdescription \"${element.definition}\"")
-        writer.println("\t}")
+        writer.println("}")
+    }
+
+    String normalize(String s) {
+        return s.replaceAll(~/[\n\t]/, ' ').replaceAll(~/\s\s+/, ' ')
     }
 
     void makeIndexHtml() {
         File file = new File(INDEX_TEMPLATE)
         if (!file.exists()) {
-            throw new FileNotFoundException("Unable to find the index.groovy template.")
+            throw new FileNotFoundException("Unable to find the index template.")
         }
         TemplateEngine template = new MarkupBuilderTemplateEngine(file)
-        String html = template.generate(roots: getTrees())
+        String html = template.generate(roots: getTrees(), version:bindings.version)
         File destination = new File(destination, 'index.html')
         destination.text = html
         println "Wrote ${destination.path}"
@@ -379,8 +424,6 @@ class VocabDsl {
  */
 package ${packageName};
 
-/** @deprecated Use the org.lappsgrid.discriminator.Discriminators class instead. */
-@Deprecated
 public class ${className} {
     private ${className}() { }
 """
@@ -388,6 +431,18 @@ public class ${className} {
                 name.replaceAll("([^_A-Z])([A-Z])", '$1_$2').toUpperCase()
             }
             elements.sort { a,b -> a.name.compareTo(b.name) }.each { ElementDelegate e ->
+                if (e.deprecated) {
+                    String message = e.deprecated
+                            .replaceAll(~/<\/?link>/, '')
+                            .tokenize('.')[0]
+                            .replaceAll('\n', ' ')
+                            .replaceAll('\t', ' ')
+                            .replaceAll(~/  +/, ' ')
+                    out.println "\t/**"
+                    out.println "\t * @deprecated $message"
+                    out.println "\t */"
+                    out.println "\t@Deprecated"
+                }
                 out.println "\tpublic static final String ${toSnakeCase(e.name) } = \"http://vocab.lappsgrid.org/${e.name}\";"
 //                e.print(System.out)
             }
@@ -465,10 +520,10 @@ public class Features {
         cli.r(longOpt:'rdf', args:1, 'generates RDF/OWL ontology in the specifed format')
         cli.i(longOpt:'index', args:1, 'template used to generate the index.html page.')
         cli.j(longOpt:'java', args:1, 'generates a Java class containing URI defintions.')
-        cli.c(longOpt: 'discriminators', 'generated Discriminator DSL fragment.')
+        cli.d(longOpt: 'discriminators', 'generated Discriminator DSL fragment.')
         cli.f(longOpt:'features', 'generates the Features.java with element property names.')
         cli.p(longOpt:'package', args:1, 'package name for the Java class.')
-        cli.d(longOpt:'dsl', args:1, 'the input DSL specification.')
+//        cli.d(longOpt:'dsl', args:1, 'the input DSL specification.')
         cli.o(longOpt:'output', args:1, 'output directory.')
         cli.x(longOpt:'debug', 'prints a data dump rather than generating anything.')
         cli.'?'(longOpt:'help', 'displays this usage messages.')
@@ -516,8 +571,13 @@ public class Features {
 //            }
 //            new VocabDsl().run(scriptFile, destination)
 //        }
+        List<String> files = params.arguments()
+        if (files.size() == 0) {
+            println "No vocabulary specified."
+            return
+        }
         VocabDsl dsl = new VocabDsl()
-        File scriptFile = new File(params.d)
+        File scriptFile = new File(files[0])
         if (params.j) {
             String packageName = "org.lappsgrid.discrimintor"
             if (params.p) {
@@ -534,7 +594,7 @@ public class Features {
             dsl.makeFeaturesJava(scriptFile, packageName, destination)
             return
         }
-        if (params.c) {
+        if (params.d) {
             dsl.makeDiscriminators(scriptFile, destination)
             return
         }

@@ -8,6 +8,12 @@ class ElementDelegate {
     String definition
     String discriminator
     String parent
+
+    // If this String is non-null then the element has been deprecated.  The
+    // value of the string is the deprecation message to be displayed if
+    // needed.
+    String deprecated
+
     List<String> sameAs = []
     List<String> similarTo = []
     String uri
@@ -38,6 +44,9 @@ class ElementDelegate {
         this.discriminator = discriminator
     }
 
+    void deprecated(String message) {
+        this.deprecated = message
+    }
     void sameAs(String... args) {
         args.each { sameAs << it }
     }
