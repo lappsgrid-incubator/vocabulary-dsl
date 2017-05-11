@@ -1,6 +1,6 @@
 # LAPPS Vocabulary DSL
 
-### Build status 
+**Build status**:
 [![master status](http://grid.anc.org:9080/travis/svg/lappsgrid-incubator/vocabulary-dsl?branch=master)](https://travis-ci.org/lappsgrid-incubator/vocabulary-dsl)
 [![develop status](http://grid.anc.org:9080/travis/svg/lappsgrid-incubator/vocabulary-dsl?branch=develop)](https://travis-ci.org/lappsgrid-incubator/vocabulary-dsl)
 
@@ -8,7 +8,13 @@ Templating system to generate LAPPS vocabulary web pages.
 
 The LAPPS Vocabulary is expressed as a Groovy DSL that is then processed to generate the http://vocab.lappsgrid.org site as well as Java classes and input to the [Discriminator DSL](https://github.com/lappsgrid-incubator/org.lappsgrid.discriminator.dsl).
 
-This repository creates the executables (shell startup script and jar file) needed to process the LAPPS Vocabulary file.
+This repository creates the executables (shell startup script and jar file) needed to process the LAPPS Vocabulary file. To create the executables do
+
+```
+$ make release
+```
+
+This creates the shell script `target/vocab/vocab` and the jar file `target/vocab/vocab-1.3.0-SNAPSHOT.jar`, where `VERSION` is determined by the content of the `VERSION` file. It also creates the archive `target/vocab-VERSION.zip` which contains the shell script and the jar. Those two executables should be added to the `bin` directory of https://github.com/lapps/vocabulary-pages, where they are used to create HTML pages and Java files.
 
 
 ## Using the jar file
