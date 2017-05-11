@@ -26,12 +26,16 @@ clean:
 install:
 	cp $(JAR) $(HOME)/bin
 	cat $(RES)/vocab | sed 's|__JAR__|vocab-$(VERSION).jar|' > $(HOME)/bin/vocab
-	if [ -d ../../Lappsgrid/vocab ]; then cp $(JAR) ../../Lappsgrid/vocab/bin; fi
-	if [ -d ../../Lappsgrid/vocab ]; then cp $(HOME)/bin/vocab ../../Lappsgrid/vocab/bin; fi
+	#if [ -d ../../Lappsgrid/vocab ]; then cp $(JAR) ../../Lappsgrid/vocab/bin; fi
+	#if [ -d ../../Lappsgrid/vocab ]; then cp $(HOME)/bin/vocab ../../Lappsgrid/vocab/bin; fi
 
 debug:
 	@echo "Current version is $(VERSION)"
 
+ifeq ($(TOKEN),)
+release:
+	@echo "Please set TOKEN with your GitHub token."
+else
 release:
 	if [ ! -f $(JAR) ] ; then mvn clean package ; fi
 	if [ -d $(DIST) ] ; then rm -rf $(DIST) ; fi
@@ -40,15 +44,14 @@ release:
 	mkdir $(DIST)
 	cat $(RES)/vocab | sed 's|__JAR__|vocab-$(VERSION).jar|' > $(DIST)/vocab
 	chmod u+x $(DIST)/vocab
-#	cp $(RES)/lapps.vocab $(DIST)
-#	cp $(RES)/*.groovy $(DIST)
-#	cp -r $(HTML) $(DIST)
 	cp $(JAR) $(DIST)
 	cd target ; zip -r vocab vocab ; cp vocab.zip $(NAME).zip ; mv vocab.zip vocab-latest.zip
+	ghc -f vocabulary.commit -t $(TOKEN)
 	echo "Release ready."
+endif
 
 upload:
-	if [ -e target/$(NAME).zip ] ; then scp -P 22022 target/$(NAME).zip suderman@anc.org:/home/www/anc/downloads ; fi
-	if [ -e target/vocab-latest.zip ] ; then scp -P 22022 target/vocab-latest.zip suderman@anc.org:/home/www/anc/downloads ; fi
+	if [ -e target/$(NAME).zip ] ; then scp -P 22022 target/$(NAME).zip anc.org:/home/www/anc/downloads ; fi
+	if [ -e target/vocab-latest.zip ] ; then scp -P 22022 target/vocab-latest.zip anc.org:/home/www/anc/downloads ; fi
 	echo "Upload complete."
 
