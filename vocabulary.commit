@@ -1,0 +1,23 @@
+/*
+ * Specifies the files to be commited as a PR to the vocabulary-pages
+ * project on GitHub.
+ */
+
+def version = new File('VERSION').text
+
+repository = 'vocabulary-pages'
+base = 'develop'
+message = "Vocabulary DSL $version"
+pr.title = 'New vocabulary DSL'
+pr.message = "Version $version of the Vocabulary DSL processor is now available."
+files = [
+	[
+		file: 'target/vocab/vocab',
+		path: 'bin/vocab'
+	],
+	[
+		file: "target/vocab/vocab-${version}.jar",
+		path: "bin/vocab-${version}.jar",
+		binary: true
+	]
+]
