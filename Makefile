@@ -15,6 +15,7 @@ help:
 	@echo "    install : Copies the jar and startup script to the user's bin directory."
 	@echo "     upload : Uploads the zip files to the ANC web server."
 	@echo "     commit : Commits the jar to GitHub and creates a PR."
+	@echo "        all : Does all of the above."
 	@echo "       help : Displays this help message."
 	@echo
 
