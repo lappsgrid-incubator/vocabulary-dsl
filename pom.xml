@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.anc.maven</groupId>
         <artifactId>groovy-parent-pom</artifactId>
-        <version>1.5.1</version>
+        <version>2.0.0</version>
     </parent>
     <groupId>org.anc.lapps</groupId>
     <artifactId>vocab-dsl</artifactId>
@@ -34,8 +34,8 @@
         <system>travis</system>
     </ciManagement>
     <properties>
-        <java.version>1.7</java.version>
-        <groovy.version>2.4.5</groovy.version>
+        <java.version>1.8</java.version>
+        <groovy.version>2.4.11</groovy.version>
         <ivy.version>2.2.0</ivy.version>
         <template.version>1.0.1</template.version>
     </properties>
@@ -77,11 +77,6 @@
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
-                    <!--
-                    <descriptors>
-                        <descritor>src/main/assembly/assembly.xml</descritor>
-                    </descriptors>
-                    -->
                     <appendAssemblyId>false</appendAssemblyId>
                     <archive>
                         <manifest>
@@ -120,44 +115,4 @@
             <type>pom</type>
         </dependency>
     </dependencies>
-    <!--
-    <repositories>
-        <repository>
-            <id>apache-repo-releases</id>
-            <url>https://repository.apache.org/content/repositories/releases/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>anc-snapshots</id>
-            <snapshots><enabled>true</enabled></snapshots>
-            <releases><enabled>false</enabled></releases>
-            <url>http://www.anc.org:8080/nexus/content/repositories/snapshots/</url>
-        </repository>
-        <repository>
-            <id>anc-releases</id>
-            <snapshots><enabled>false</enabled></snapshots>
-            <releases><enabled>true</enabled></releases>
-            <url>http://www.anc.org:8080/nexus/content/repositories/releases</url>
-        </repository>
-    </repositories>
-    <pluginRepositories>
-        <pluginRepository>
-            <id>anc-plugin-snapshots</id>
-            <snapshots><enabled>true</enabled></snapshots>
-            <releases><enabled>false</enabled></releases>
-            <url>http://www.anc.org:8080/nexus/content/repositories/snapshots/</url>
-        </pluginRepository>
-        <pluginRepository>
-            <id>anc-plugin-releases</id>
-            <snapshots><enabled>false</enabled></snapshots>
-            <releases><enabled>true</enabled></releases>
-            <url>http://www.anc.org:8080/nexus/content/repositories/releases</url>
-        </pluginRepository>
-    </pluginRepositories>
-    -->
 </project>

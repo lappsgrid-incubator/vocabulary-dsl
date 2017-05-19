@@ -14,6 +14,8 @@ help:
 	@echo "    release : Creates and zips the startup script and jar file."
 	@echo "    install : Copies the jar and startup script to the user's bin directory."
 	@echo "     upload : Uploads the zip files to the ANC web server."
+	@echo "     commit : Commits the jar to GitHub and creates a PR."
+	@echo "        all : Does all of the above."
 	@echo "       help : Displays this help message."
 	@echo
 
@@ -42,13 +44,21 @@ release:
 	cd target ; zip -r vocab vocab ; cp vocab.zip $(NAME).zip ; mv vocab.zip vocab-latest.zip
 	echo "Release ready."
 
-ifeq ($(TOKEN),)
-upload:
-	@echo "Please set TOKEN with your GitHub token."
-else
 upload:
 	if [ -e target/$(NAME).zip ] ; then scp -P 22022 target/$(NAME).zip anc.org:/home/www/anc/downloads ; fi
 	if [ -e target/vocab-latest.zip ] ; then scp -P 22022 target/vocab-latest.zip anc.org:/home/www/anc/downloads ; fi
-	ghc -f vocabulary.commit -t $(TOKEN)
 	echo "Upload complete."
+
+ifeq ($(TOKEN),)
+commit:
+	@echo "Please set TOKEN with your GitHub token."
+	@echo
+	@echo "NOTE: if you just ran 'make all' then you only have to run 'make commit'"
+	@echo "after setting TOKEN"
+	@echo
+else
+commit:
+	ghc -f vocabulary.commit -t $(TOKEN)
 endif
+
+all: clean jar install release upload commit
