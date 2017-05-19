@@ -10,7 +10,7 @@
     </parent>
     <groupId>org.anc.lapps</groupId>
     <artifactId>vocab-dsl</artifactId>
-    <version>1.3.0-SNPSHOT</version>
+    <version>1.3.0</version>
     <name>LAPPS Vocabulary DSL</name>
     <description>DSL processor used to generate the LAPP Vocabulary web pages.</description>
     <url>https://github.com/lappsgrid-incubator/vocabulary-dsl</url>
