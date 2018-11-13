@@ -1,19 +1,14 @@
 package org.anc.lapps.vocab.dsl
 
-import org.anc.template.HtmlTemplateEngine
 import org.anc.template.MarkupBuilderTemplateEngine
-import org.apache.jena.ontology.AnnotationProperty
-import org.apache.jena.ontology.DatatypeProperty
-import org.apache.jena.ontology.OntClass
-import org.apache.jena.ontology.OntModel
-import org.apache.jena.rdf.model.Model
+import org.anc.template.TemplateEngine
+import org.apache.jena.ontology.*
 import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.rdf.model.Property
 import org.apache.jena.riot.RDFDataMgr
 import org.apache.jena.riot.RDFFormat
 import org.codehaus.groovy.control.CompilerConfiguration
 import org.codehaus.groovy.control.customizers.ImportCustomizer
-import org.anc.template.TemplateEngine
 
 /**
  * @author Keith Suderman
@@ -153,6 +148,9 @@ class VocabDsl {
         Map<String,OntClass> classes = [:]
         Map<String,Property> properties = [:]
         ontology = ModelFactory.createOntologyModel()
+        println "Adding dummy node with versionInfo."
+        OntResource ontResource = ontology.createOntology("http://vocab.lappsgrid.org")
+        ontResource.addVersionInfo(ontology.createLiteral(bindings.version).toString())
         elements.each { ElementDelegate element ->
             println "Processing ${element.name}"
             OntClass theClass = classes[element.name]
