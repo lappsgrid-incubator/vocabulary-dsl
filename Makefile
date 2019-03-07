@@ -42,11 +42,14 @@ release:
 	chmod u+x $(DIST)/vocab
 	cp $(JAR) $(DIST)
 	cd target ; zip -r vocab vocab ; cp vocab.zip $(NAME).zip ; mv vocab.zip vocab-latest.zip
+	cd target/vocab ; tar czf $(NAME).tgz vocab *.jar ; cp $(NAME).tgz ../ ; mv $(NAME).tgz ../vocab-latest.tgz
 	echo "Release ready."
 
 upload:
 	if [ -e target/$(NAME).zip ] ; then scp -P 22022 target/$(NAME).zip anc.org:/home/www/anc/downloads ; fi
 	if [ -e target/vocab-latest.zip ] ; then scp -P 22022 target/vocab-latest.zip anc.org:/home/www/anc/downloads ; fi
+	if [ -e target/$(NAME).tgz ] ; then scp -P 22022 target/$(NAME).tgz anc.org:/home/www/anc/downloads ; fi
+	if [ -e target/vocab-latest.tgz ] ; then scp -P 22022 target/vocab-latest.tgz anc.org:/home/www/anc/downloads ; fi
 	echo "Upload complete."
 
 ifeq ($(TOKEN),)
