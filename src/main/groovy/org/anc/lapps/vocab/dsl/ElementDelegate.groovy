@@ -20,6 +20,12 @@ class ElementDelegate {
     Map properties = [:]
     Map metadata = [:]
 
+    List<ElementDelegate> elements
+
+    ElementDelegate(List<ElementDelegate> elements) {
+        this.elements = elements
+    }
+
     def propertyMissing(String name, value) {
         throw new MissingPropertyException("Unknown property ${name}")
     }
@@ -66,7 +72,7 @@ class ElementDelegate {
     }
 
     void properties(Closure cl) {
-        cl.delegate = new PropertiesDelegate(properties)
+        cl.delegate = new PropertiesDelegate(properties, elements, name)
         cl.resolveStrategy = Closure.DELEGATE_FIRST
         cl()
     }

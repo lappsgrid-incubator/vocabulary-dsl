@@ -8,6 +8,15 @@ class PropertyDelegate {
     String description
     boolean required = false;
     boolean requiredSet = false;
+    String annotationType
+    String name
+    List<ElementDelegate> elements
+
+    PropertyDelegate(List<ElementDelegate> elements, String annotationType, String name) {
+        this.elements = elements
+        this.annotationType = annotationType
+        this.name = name
+    }
 
     void setProperty(String name, value) {
         throw new MissingPropertyException("Unknown property ${name}")
@@ -31,5 +40,11 @@ class PropertyDelegate {
 
     void optional(boolean optional) {
         required(!optional)
+    }
+
+    void discriminator(boolean isOne) {
+        if (isOne) {
+            elements << new ElementDelegate(name:"${type}#${name}", discriminator:name, description:description)
+        }
     }
 }

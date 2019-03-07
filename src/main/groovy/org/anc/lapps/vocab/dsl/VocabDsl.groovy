@@ -1,7 +1,5 @@
 package org.anc.lapps.vocab.dsl
 
-import org.anc.template.HtmlTemplateEngine
-import org.anc.template.MarkupBuilderTemplateEngine
 import org.apache.jena.ontology.AnnotationProperty
 import org.apache.jena.ontology.DatatypeProperty
 import org.apache.jena.ontology.OntClass
@@ -13,7 +11,6 @@ import org.apache.jena.riot.RDFDataMgr
 import org.apache.jena.riot.RDFFormat
 import org.codehaus.groovy.control.CompilerConfiguration
 import org.codehaus.groovy.control.customizers.ImportCustomizer
-import org.anc.template.TemplateEngine
 
 /**
  * @author Keith Suderman
@@ -110,7 +107,7 @@ class VocabDsl {
 
     void makeHtml() {
         // Create the template engine that will generate the HTML.
-        TemplateEngine engine = new MarkupBuilderTemplateEngine(new File(FILE_TEMPLATE))
+        TemplateEngine engine = new TemplateEngine(new File(FILE_TEMPLATE))
         String version = bindings.version ?: '99.0.0'
         elements.each { element ->
             // Walk up the hierarchy and record the names of
@@ -247,7 +244,7 @@ class VocabDsl {
         }
 
         meta.element = { Closure cl ->
-            ElementDelegate element = new ElementDelegate()
+            ElementDelegate element = new ElementDelegate(elements)
             cl.delegate = element
             cl.resolveStrategy = Closure.DELEGATE_FIRST
             cl()
@@ -260,7 +257,7 @@ class VocabDsl {
                 throw new MissingMethodException(name, java.lang.Object.class, args)
             }
             Closure cl = (Closure) args[0]
-            ElementDelegate element = new ElementDelegate()
+            ElementDelegate element = new ElementDelegate(elements)
             element.name = name
             cl.delegate = element
             cl()
@@ -386,7 +383,7 @@ class VocabDsl {
         if (!file.exists()) {
             throw new FileNotFoundException("Unable to find the index template.")
         }
-        TemplateEngine template = new MarkupBuilderTemplateEngine(file)
+        TemplateEngine template = new TemplateEngine(file)
         String html = template.generate(roots: getTrees(), version:bindings.version)
         File destination = new File(destination, 'index.html')
         destination.text = html
