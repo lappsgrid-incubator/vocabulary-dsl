@@ -8,11 +8,12 @@ class PropertiesDelegate {
     Map properties
     String type
     List<ElementDelegate> elements
+    String annotationType
 
     public PropertiesDelegate(Map properties, List<ElementDelegate> elements, String type) {
         this.properties = properties
         this.elements = elements
-        this.type = type
+        this.annotationType = type
     }
 
     def propertyMissing(String name, value) {
@@ -32,7 +33,7 @@ class PropertiesDelegate {
         }
 
         Closure cl = (Closure) args[0]
-        cl.delegate = new PropertyDelegate(elements, type, name)
+        cl.delegate = new PropertyDelegate(elements, annotationType, name)
         cl.resolveStrategy = Closure.DELEGATE_FIRST
         cl()
         properties[name] = cl.delegate

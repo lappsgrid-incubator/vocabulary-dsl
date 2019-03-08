@@ -44,7 +44,14 @@ class PropertyDelegate {
 
     void discriminator(boolean isOne) {
         if (isOne) {
-            elements << new ElementDelegate(name:"${type}#${name}", discriminator:name, description:description)
+            Map args = [
+                    name: "${annotationType}#${name}",
+                    discriminator:name,
+                    definition:description,
+                    elements:elements
+//                    parent: annotationType
+            ]
+            elements << new ElementDelegate(args)
         }
     }
 }

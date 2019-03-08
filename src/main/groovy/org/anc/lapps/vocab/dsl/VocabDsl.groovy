@@ -11,6 +11,7 @@ import org.apache.jena.riot.RDFDataMgr
 import org.apache.jena.riot.RDFFormat
 import org.codehaus.groovy.control.CompilerConfiguration
 import org.codehaus.groovy.control.customizers.ImportCustomizer
+import groovy.cli.commons.CliBuilder
 
 /**
  * @author Keith Suderman
@@ -34,8 +35,8 @@ class VocabDsl {
     File parentDir
     File destination
     Binding bindings = new Binding()
-    List<ElementDelegate> elements = []
-    Map<String, ElementDelegate> elementIndex = [:]
+    List<ElementDelegate> elements //= []
+    Map<String, ElementDelegate> elementIndex //= [:]
 
     // Ontology used when generating RDF/OWL.  Instances are created and
     // destroyed as needed.
@@ -89,6 +90,8 @@ class VocabDsl {
     }
 
     void compile(String scriptString) {
+        elements = []
+        elementIndex = [:]
         ClassLoader loader = getLoader()
         CompilerConfiguration configuration = getCompilerConfiguration()
         GroovyShell shell = new GroovyShell(loader, bindings, configuration)
@@ -110,23 +113,25 @@ class VocabDsl {
         TemplateEngine engine = new TemplateEngine(new File(FILE_TEMPLATE))
         String version = bindings.version ?: '99.0.0'
         elements.each { element ->
-            // Walk up the hierarchy and record the names of
-            // all ancestors.
-            List parents = []
-            String parent = element.parent
-            while (parent) {
-                ElementDelegate delegate = elementIndex[parent]
-                parents.add(0, delegate)
-                parent = delegate.parent
+            if (!element.name.contains("#")) {
+                // Walk up the hierarchy and record the names of
+                // all ancestors.
+                List parents = []
+                String parent = element.parent
+                while (parent) {
+                    ElementDelegate delegate = elementIndex[parent]
+                    parents.add(0, delegate)
+                    parent = delegate.parent
+                }
+                // params is the data model to be passed to the template
+                def params = [ element:element, elements:elementIndex, parents:parents, version:bindings.getVariable('version') ]
+                // file is where the generated HTML will be written.
+                File file = new File(destination, "${element.name}.html")
+                // Call the template to generate the HTML from the model and
+                // write it to the file.
+                file.text = engine.generate(params)
+                println "Wrote ${file.path} v${bindings.version}"
             }
-            // params is the data model to be passed to the template
-            def params = [ element:element, elements:elementIndex, parents:parents, version:bindings.getVariable('version') ]
-            // file is where the generated HTML will be written.
-            File file = new File(destination, "${element.name}.html")
-            // Call the template to generate the HTML from the model and
-            // write it to the file.
-            file.text = engine.generate(params)
-            println "Wrote ${file.path} v${bindings.version}"
         }
     }
 
@@ -285,8 +290,8 @@ class VocabDsl {
                               'nchunk',
                               'vchunk',
                               'lemma',
-                              'lookup',
-                              'matches',
+//                              'lookup',
+//                              'matches',
                               'markable',
                               'dependency-structure',
                               'phrase-structure',
@@ -294,11 +299,11 @@ class VocabDsl {
                               'dependency']
 
         compile(script.text)
-        elements << new ElementDelegate(name:'Chunk', discriminator:'chunk', definition: "Any type of annotations that segments the primary data into chunks.", parent: 'annotation')
-        elements << new ElementDelegate(name:'Token#pos', discriminator: 'pos', definition: "Part-Of-Speech tag. The tagset used should be specified in metadata.", parent: 'annotation')
-        elements << new ElementDelegate(name:'Token#lemma', discriminator: 'lemma', definition: 'Base form of a word or token.', parent: 'annotation')
-        elements << new ElementDelegate(name:'Lookup', discriminator: 'lookup', definition: 'Dictionary based annotations. Used in GATE.', parent: 'annotation')
-        elements << new ElementDelegate(name:'Matches', discriminator: 'matches', definition: 'Definition needed.', parent: 'annotation')
+//        elements << new ElementDelegate(name:'Chunk', discriminator:'chunk', definition: "Any type of annotations that segments the primary data into chunks.", parent: 'annotation')
+//        elements << new ElementDelegate(name:'Token#pos', discriminator: 'pos', definition: "Part-Of-Speech tag. The tagset used should be specified in metadata.", parent: 'annotation')
+//        elements << new ElementDelegate(name:'Token#lemma', discriminator: 'lemma', definition: 'Base form of a word or token.', parent: 'annotation')
+//        elements << new ElementDelegate(name:'Lookup', discriminator: 'lookup', definition: 'Dictionary based annotations. Used in GATE.', parent: 'annotation')
+//        elements << new ElementDelegate(name:'Matches', discriminator: 'matches', definition: 'Definition needed.', parent: 'annotation')
 
         elements.each {
             if (!it.discriminator) {
@@ -427,7 +432,7 @@ public class ${className} {
             def toSnakeCase = { String name ->
                 name.replaceAll("([^_A-Z])([A-Z])", '$1_$2').toUpperCase()
             }
-            elements.sort { a,b -> a.name.compareTo(b.name) }.each { ElementDelegate e ->
+            elements.findAll{ !it.name.contains('#')}.sort { a,b -> a.name.compareTo(b.name) }.each { ElementDelegate e ->
                 if (e.deprecated) {
                     String message = e.deprecated
                             .replaceAll(~/<\/?link>/, '')
@@ -468,17 +473,58 @@ public class Features {
 \tprivate Features() { }
 """
             elements.each { ElementDelegate e ->
+                if (!e.name.contains('#')) {
+                    String superClass = ""
+                    if (e.parent) {
+                        superClass = " extends ${e.parent}"
+                    }
+                    out.println "\tpublic static class ${e.name}${superClass} {"
+                    e.properties.each { String name, ignored ->
+                        String snakeCase = toSnakeCase(name)
+                        if (name == "pos") {
+                            // Hack-around since the POS tag name changed.
+                            out.println "\t\tpublic static final String PART_OF_SPEECH = \"pos\";"
+                        }
+                        out.println "\t\tpublic static final String ${snakeCase} = \"${name}\";"
+                    }
+                    out.println "\t}"
+                    out.println()
+
+                }
+            }
+            out.println("}")
+        }
+        println "Wrote ${outFile.path}"
+    }
+
+    void makeMetadataJava(File scriptFile, String packageName, File destination)
+    {
+        println "Generating Metadata.java"
+        compile(scriptFile.text)
+        File outFile = new File(destination, "Metadata.java")
+        outFile.withPrintWriter { PrintWriter out ->
+            out.println """/*
+ * DO NOT EDIT THIS FILE.
+ *
+ * This file is machine generated and any edits will be lost the next
+ * time the file is generated. Use the https://github.com/lapps/vocabulary-pages
+ * project to make changes.
+ */
+
+package ${packageName};
+
+public class Metadata {
+\tprivate Metadata() { }
+"""
+
+            elements.findAll{ !it.name.contains('#') }.each { ElementDelegate e ->
                 String superClass = ""
                 if (e.parent) {
                     superClass = " extends ${e.parent}"
                 }
                 out.println "\tpublic static class ${e.name}${superClass} {"
-                e.properties.each { String name, ignored ->
+                e.metadata.each { String name, ignored ->
                     String snakeCase = toSnakeCase(name)
-                    if (name == "pos") {
-                        // Hack-around since the POS tag name changed.
-                        out.println "\t\tpublic static final String PART_OF_SPEECH = \"pos\";"
-                    }
                     out.println "\t\tpublic static final String ${snakeCase} = \"${name}\";"
                 }
                 out.println "\t}"
@@ -537,7 +583,7 @@ public class Features {
         if (params.v) {
             println()
             println "LAPPS Vocabulary DSL v" + Version.getVersion()
-            println "Copyright 2014 American National Corpus"
+            println "Copyright 2019 American National Corpus"
             println()
             return
         }
@@ -589,6 +635,7 @@ public class Features {
                     packageName = params.p
             }
             dsl.makeFeaturesJava(scriptFile, packageName, destination)
+            dsl.makeMetadataJava(scriptFile, packageName, destination)
             return
         }
         if (params.d) {

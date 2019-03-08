@@ -5,9 +5,12 @@ package org.anc.lapps.vocab.dsl
  */
 class MetadataDelegate {
     Map properties
-
-    public MetadataDelegate(Map properties) {
+    List<ElementDelegate> elements
+    String annotationType
+    public MetadataDelegate(Map properties, List<ElementDelegate> elements, String annotationType) {
         this.properties = properties
+        this.elements = elements
+        this.annotationType = annotationType
     }
 
     def propertyMissing(String name, value) {
@@ -27,7 +30,7 @@ class MetadataDelegate {
         }
 
         Closure cl = (Closure) args[0]
-        cl.delegate = new PropertyDelegate()
+        cl.delegate = new PropertyDelegate(elements, annotationType, name)
         cl.resolveStrategy = Closure.DELEGATE_FIRST
         cl()
         properties[name] = cl.delegate

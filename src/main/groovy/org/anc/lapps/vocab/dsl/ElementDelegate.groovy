@@ -1,8 +1,11 @@
 package org.anc.lapps.vocab.dsl
 
+import groovy.transform.MapConstructor
+
 /**
  * @author Keith Suderman
  */
+@MapConstructor
 class ElementDelegate {
     String name
     String definition
@@ -66,7 +69,7 @@ class ElementDelegate {
     }
 
     void metadata(Closure cl) {
-        cl.delegate = new MetadataDelegate(metadata)
+        cl.delegate = new MetadataDelegate(metadata, elements, name)
         cl.resolveStrategy = Closure.DELEGATE_FIRST
         cl()
     }
