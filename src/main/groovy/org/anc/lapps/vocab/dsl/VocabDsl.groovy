@@ -4,6 +4,7 @@ import org.apache.jena.ontology.AnnotationProperty
 import org.apache.jena.ontology.DatatypeProperty
 import org.apache.jena.ontology.OntClass
 import org.apache.jena.ontology.OntModel
+import org.apache.jena.ontology.OntResource
 import org.apache.jena.rdf.model.Model
 import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.rdf.model.Property
@@ -155,6 +156,9 @@ class VocabDsl {
         Map<String,OntClass> classes = [:]
         Map<String,Property> properties = [:]
         ontology = ModelFactory.createOntologyModel()
+        println "Adding dummy node with versionInfo."
+        OntResource ontResource = ontology.createOntology("http://vocab.lappsgrid.org")
+        ontResource.addVersionInfo(ontology.createLiteral(bindings.version).toString())
         elements.each { ElementDelegate element ->
             println "Processing ${element.name}"
             OntClass theClass = classes[element.name]
