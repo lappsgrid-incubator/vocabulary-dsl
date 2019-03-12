@@ -1,6 +1,7 @@
 # LAPPS Vocabulary DSL
 
-**Build status**:
+**Build status**
+
 [![master status](http://grid.anc.org:9080/travis/svg/lappsgrid-incubator/vocabulary-dsl?branch=master)](https://travis-ci.org/lappsgrid-incubator/vocabulary-dsl)
 [![develop status](http://grid.anc.org:9080/travis/svg/lappsgrid-incubator/vocabulary-dsl?branch=develop)](https://travis-ci.org/lappsgrid-incubator/vocabulary-dsl)
 
@@ -68,7 +69,3 @@ Creates two zip files with the main jar file and a startup script. The two zips 
 Copies the versioned jar and startup script to `$HOME/bin` as well as to a machine specific directory if it exists.
 * **upload**<br/>
 Uploads the zip file to the downloads area on the ANC web server. This goal will need to be modified before it can be used by other users and also assumes the user has a valid SSH key installed on the ANC server.
-
-## Discriminators
-
-Currently the vocabulary files and the discriminator files are genereated by two separate DSL processors. Currently the output from the vocabulary DSL must be copied and pasted into the discriminator.config file before the disciminator web pages can be generated.
