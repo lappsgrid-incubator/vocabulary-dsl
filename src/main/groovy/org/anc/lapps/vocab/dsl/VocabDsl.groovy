@@ -280,7 +280,7 @@ class VocabDsl {
 
     void makeDiscriminators(File script, File destination) {
         List<String> order = ['annotation',
-                              'chunk',
+//                              'chunk',
                               'paragraph',
                               'sentence',
                               'token',
@@ -547,18 +547,6 @@ public class Metadata {
     }
 
     static void main(args) {
-//        if (args.size() == 0) {
-//            println """
-//USAGE
-//
-//java -jar vocab-${Version.version}.jar [-groovy] /path/to/script"
-//
-//Specifying the -groovy flag will cause the GroovyTemplateEngine to be
-//used. Otherwise the MarkupBuilderTemplateEngine will be used.
-//
-//"""
-//            return
-//        }
         CliBuilder cli = new CliBuilder()
         cli.usage = "vocab [-?|-v] -d <dsl> -i <template> -h <template> -o <directory>"
         cli.header = "Generates LAPPS Vocabulary web site a LAPPS Vocab DSL file."
@@ -570,7 +558,6 @@ public class Metadata {
         cli.d(longOpt: 'discriminators', 'generated Discriminator DSL fragment.')
         cli.f(longOpt:'features', 'generates the Features.java with element property names.')
         cli.p(longOpt:'package', args:1, 'package name for the Java class.')
-//        cli.d(longOpt:'dsl', args:1, 'the input DSL specification.')
         cli.o(longOpt:'output', args:1, 'output directory.')
         cli.x(longOpt:'debug', 'prints a data dump rather than generating anything.')
         cli.'?'(longOpt:'help', 'displays this usage messages.')
@@ -607,17 +594,6 @@ public class Metadata {
             }
         }
 
-//        else {
-//            File scriptFile = new File(args[0])
-//            File destination
-//            if (args.size() == 2) {
-//                destination = new File(args[1])
-//            }
-//            else {
-//                destination = new File(".")
-//            }
-//            new VocabDsl().run(scriptFile, destination)
-//        }
         List<String> files = params.arguments()
         if (files.size() == 0) {
             println "No vocabulary specified."
