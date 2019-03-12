@@ -8,6 +8,7 @@ import org.apache.jena.ontology.OntResource
 import org.apache.jena.rdf.model.Model
 import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.rdf.model.Property
+import org.apache.jena.rdf.model.Resource
 import org.apache.jena.riot.RDFDataMgr
 import org.apache.jena.riot.RDFFormat
 import org.codehaus.groovy.control.CompilerConfiguration
@@ -151,10 +152,19 @@ class VocabDsl {
     void makeOwl(File script, RDFFormat format, File destination, String ext) {
         compile(script.text)
 
-//        Property similarTo = makeProperty('similarTo')
-
         Map<String,OntClass> classes = [:]
+        Map<String,Resource> resources = [:]
         Map<String,Property> properties = [:]
+
+        def resource = { String name ->
+            Resource resource = resources[name]
+            if (resource == null) {
+                resource = ontology.createResource(name)
+                resources[name] = resource
+            }
+            return resource
+        }
+
         ontology = ModelFactory.createOntologyModel()
         println "Adding dummy node with versionInfo."
         OntResource ontResource = ontology.createOntology("http://vocab.lappsgrid.org")
@@ -178,29 +188,24 @@ class VocabDsl {
                 if (!parent) {
                     throw new VocabularyException("Undefined parent class: ${element.parent}")
                 }
-//                if (element == parent) {
-//                    println "Skipping parent: element == parent"
-//                }
-//                else if (element.equals(parent)) {
-//                    println "Skipping parent: element.equals(parent)"
-//                }
-//                else {
-//                    println "Superclass for ${element.name} is ${element.parent}"
-                    theClass.setSuperClass(parent)
-//                }
+                theClass.setSuperClass(parent)
             }
-            element.sameAs.each { resource ->
-                theClass.addSameAs(ontology.createResource(resource))
+            element.sameAs.each { name ->
+                theClass.addSameAs(resource(name))
             }
             element.metadata.each { String key, PropertyDelegate value ->
                 Property property = makeMetadata(key)
                 property.addComment(ontology.createLiteral(value.description))
-                theClass.addProperty(property, value.type)
+                property.addDomain(theClass)
+                property.addRange(resource(value.type))
+//                theClass.addProperty(property, value.type)
             }
             element.properties.each { String name, PropertyDelegate value ->
                 Property property = makeProperty(element.name, name)
                 property.addComment(ontology.createLiteral(value.description))
-                theClass.addProperty(property, value.type)
+                property.addDomain(theClass)
+                property.addRange(resource(value.type))
+//                theClass.addProperty(property, value.type)
             }
 
         }
