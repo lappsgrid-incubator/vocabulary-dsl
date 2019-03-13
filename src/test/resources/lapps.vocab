@@ -4,52 +4,56 @@
  * "$vocab/Token", "$iso/DC-2119"
  */
 schema="http://schema.org"
-vocab="http//vocab.lappsgrid.org"
 iso="http://www.isocat.org/datcat"
 
-version='1.1.0'
+version='1.2.9-SNAPSHOT'
+File versionFile = new File('VERSION')
+if (versionFile.exists()) {
+	version = versionFile.text.trim()
+}
 
 // Message to be displayed for deprecated named entities.
 NE_DEPRECATED = '''Use <link>NamedEntity</link> with appropriate @category and @type attributes instead. This annotation type will be removed in a future version of the vocabulary.'''
 
-element {
-	name "Thing"
+Thing {
 	definition "The most generic specification."
 	sameAs "$schema/Thing"
 	properties {
 		alternateName {
-			type "String"
+			type "xsd:string"
 			description "An alias for the item."
 		}
 	}
 }
 
-element {
-	name "Annotation"
+Annotation {
 	parent "Thing"
 	definition "Linguistic information added to a word, phrase, clause, sentence, document, etc., or a relation among them."
 	sameAs "$iso/DC-2318"
 	metadata {
 	    producer {
-	        type "List of URI"
+	        type "xsd:string"
 	        description "The software that produced the annotations."
 	    }
 	    rules {
-	        type "List of URI"
+	        type "xsd:string"
 	        description "The documentation (if any) for the rules that were used to identify the annotations."
+	    }
+	    type {
+	    	type "xsd:string"
+	    	description "The value type of the annotations produced."
 	    }
 	}
 	properties {
 		id {
-			type "String"
+			type "xsd:string"
 			description "A unique identifier associated with the annotation."
 			required true
 		}
 	}
 }
 
-element {
-	name "Region"
+Region {
 	parent "Annotation"
 	definition """An annotation over a region in primary data. A <b>Region</b> may be defined by pointing directly into primary data
 	(for text, using <em>start</em> and
@@ -58,151 +62,144 @@ element {
 	 property."""
 	properties {
 		targets {
-			type "List of IDs"
+			type "xsd:IDREFS"
 			description """IDs of a sequence of annotations covering the region of primary data referred to by this annotation. Used as an alternative to <em>start</em> and <em>end</em> to point to component annotations (e.g., a token sequence) rather than directly into primary data, or to link two or more annotations (e.g., in a coreference annotation)."""
 		}
 		start {
-			type "Integer"
+			type "xsd:long"
 			description "The starting offset (0-based) in the primary data."
 		}
 		end {
-			type "Integer"
+			type "xsd:long"
 			description "The ending offset (0-based) in the primary data."
 		}
 	}
 }
 
-element {
-	name 'Relation'
+Relation {
 	parent 'Annotation'
-	definition 'Definition needed.'
+	definition '''Any relationship between linguistic forms or constituents, e.g., a
+grammatical relation such as subject-object, a semantic relation between meanings or <i>roles</i>, a temporal relation
+indicating the simultaneity or ordering in time of events or states, etc.'''
 	properties {
 		label {
-			type "String or URI"
+			type "xsd:string"
 			description "A category label."
 			required true
 		}
 	}
 }
 
-element {
-	name 'GenericRelation'
+GenericRelation {
 	parent 'Relation'
 	definition 'Any relation involving one or more arguments.'
 	properties {
 		relation {
-			type "ID"
+			type "xsd:ID"
 			description 'The head of the relation.'
 			required true
 		}
 		arguments {
-			type 'List of IDs'
+			type 'xsd:IDREFS'
 			description 'The arguments of the relation.'
 			required true
 		}
 	}
 }
 
-element {
-	name 'SemanticRole'
+SemanticRole {
 	parent 'Relation'
 	definition 'The underlying relationship that a participant has with the main predicate in a clause.'
 	properties {
 		head {
-			type "ID"
+			type "xsd:ID"
 			description 'The predicate.'
 			required true
 		}
 		argument {
-			type 'ID'
+			type 'xsd:ID'
 			description 'The element that fulfills the role relative to the predicate.'
 			required true
 		}
 	}
 }
 
-element {
-	name "Paragraph"
+Paragraph {
 	parent "Region"
-	definition "Definition needed."
+	definition "A division of a piece of writing, usually dealing with a single theme and indicated by a new line, indentation, and/or numbering."
 }
 
-element {
-	name "Sentence"
+Sentence {
 	parent "Region"
 	definition "A sequence of words capable of standing alone to make an assertion, ask a question, or give a command, usually consisting of a subject and a predicate containing a finite verb. "
 	sameAs "$iso/DC-1386"
 	properties {
 		sentenceType {
-			type "String or URI"
+			type "xsd:string"
 			description "Values such as declarative, interrogative, exclamatory, question, fragment. Ideally a URI referencing a pre-defined descriptor."
 		}
 	}
 }
 
-element {
-	name 'NounChunk'
+NounChunk {
 	discriminator 'nchunk'
 	parent 'Region'
 	definition "The initial portion of a non-recursive noun phrase up to the head, including determiners but not including postmodifying prepositional phrases or clauses."
 }
 
-element {
-	name 'VerbChunk'
+VerbChunk {
 	parent 'Region'
 	definition "Non-recursive verb groups, which include modals, auxiliary verbs, and medial adverbs, and end at the head verb or predicate adjective."
 	discriminator 'vchunk'
 	properties {
 		vcType {
-			type "String or URI"
+			type "xsd:string"
 			description "Values such as finite, non-finite, participle, modal, special (e.g., 'is going to investigate')."
 		}
 		tense {
-			type "String or URI"
+			type "xsd:string"
 			description "Provides tense information for the verb. Example values include BeVBG, BeVBN, FutCon, HaveVBN, Pas, PasCon, PasPer, PasPerCon, Per, Pre, PreCon, PrePer, PrePerCon, SimFut, SimPas, SimPre, none"
 		}
 		voice {
-			type "String or URI"
+			type "xsd:string"
 			description "Indicates if the verb group is active or passive. Possible values include ACTIVE, PASSIVE, or NONE"
 		}
 		neg {
-			type "String or URI"
+			type "xsd:string"
 			description "Indicates whether or not the verb is negated. Values include YES, NO."
 		}
 	}
 }
 
-element {
-    name "NamedEntity"
+NamedEntity {
     parent "Region"
     definition "A phrase that clearly identifies an individual from others that have similar attributes, such as the name of a person, organization, location, artifact, etc. as well as temporal expressions."
     sameAs "$iso/DC-2275"
     discriminator 'ne'
     metadata {
     	namedEntityCategorySet {
-    		type "String or URI"
+    		type "xsd:string"
     		description "The set of values that can be used for the category property."
     	}
     }
     properties {
     	category {
-    		type "String or URI"
+    		type "xsd:string"
     		required true
     		description "The type of named entity. Typically one of DATE, PERSON, ORGANIZATION, or LOCATION."
     	}
     	type {
-    		type "String or URI"
+    		type "xsd:string"
     		description "A type attribute for the entity. For example the type of location or organization."
     	}
         gender {
-            type "String or URI"
+            type "xsd:string"
             description "A value such as male, female, unknown. Ideally a URI referencing a pre-defined descriptor."
         }
     }
 }
 
-element {
-    name "Date"
+Date {
     parent "NamedEntity"
     definition "A reference to a date or period."
     similarTo "http://schema.org/Date"
@@ -210,42 +207,39 @@ element {
     deprecated NE_DEPRECATED
     properties {
         dateType {
-            type "String or URI"
+            type "xsd:string"
             description "Sub-type information such as date, datetime, time, etc. Ideally a URI referencing a pre-defined descriptor."
         }
     }
 }
 
-element {
-    name "Location"
+Location {
     parent "NamedEntity"
     definition "Name of politically or geographically defined location (cities, provinces, countries, international regions, bodies of water, mountains,named regions, etc.)"
     sameAs "$iso/DC-4339", "$schema/Location"
     deprecated NE_DEPRECATED
     properties {
         locType {
-            type "String or URI"
+            type "xsd:string"
             description "Location type: country, city, GPE, sea, lake, etc. Ideally a URI referencing a pre-defined descriptor."
         }
     }
 }
 
-element {
-    name "Organization"
+Organization {
     parent "NamedEntity"
     definition "A named corporate, governmental, educational, religious, political, or other organizational entity."
     sameAs "$iso/DC-2979", "$schema/Organization"
     deprecated NE_DEPRECATED
     properties {
         orgType {
-            type "String or URI"
+            type "xsd:string"
             description "Sub-type information (e.g., government, educational, religious, political, museum, hotel, medical, etc.). Ideally a URL referencing a pre-defined descriptor."
         }
     }
 }
 
-element {
-    name "Person"
+Person {
     parent "NamedEntity"
     definition "The name of a person or family."
     sameAs "$iso/DC-2978"
@@ -253,179 +247,178 @@ element {
     deprecated NE_DEPRECATED
     properties {
         gender {
-            type "String or URI"
+            type "xsd:string"
             description "A value such as male, female, unknown. Ideally a URI referencing a pre-defined descriptor."
         }
     }
 }
 
-element {
-    name "Token"
+Token {
     parent "Region"
     definition "A string of one or more characters that serves as an indivisible unit for the purposes of morpho-syntactic labeling (part of speech tagging)."
     similarTo "$iso/DC-1403"
     metadata {
     	posTagSet {
-    		type "String or URI"
+    		type "xsd:string"
     		description "The definition of the tag set used by the part-of-speech tagger."
     	}
     }
     properties {
         pos {
-            type "String or URI"
+            type "xsd:string"
             description "Part-of-speech tag associated with the token."
+            discriminator true
         }
         lemma {
-            type "String or URI"
+            type "xsd:string"
             description "The root (base) form associated with the token. URI may point to a lexicon entry."
+            discriminator true
         }
         tokenType {
-            type "String or URI"
+            type "xsd:string"
             description "Sub-type such as word, punctuation, abbreviation, number, symbol, etc. Ideally a URI referencing a pre-defined descriptor."
         }
         orth {
-            type "String or URI"
+            type "xsd:string"
             description "Orthographic properties of the token such as LowerCase, UpperCase, UpperInitial, etc. Ideally a URI referencing a pre-defined descriptor."
+            discriminator true
+        }
+        morph {
+        	type "http://vocab.lappsgrid.org/schema/1.3.0/morphology.json-schema"
+        	description "First experimental attempt at a morphology"
+        	discriminator true
         }
         length {
-            type "Integer"
+            type "xsd:long"
             description "The length of the token"
         }
         word {
-        	type "String"
+        	type "xsd:string"
         	description "The surface string in the primary data covered by this Token."
         }
     }
 }
 
-element {
-	name "Coreference"
+Coreference {
 	parent "Annotation"
 	definition "Used to mark references to other mentions of the same entity or instance."
 	discriminator 'coref'
 	properties {
 		mentions {
-			type "List of IDs"
+			type "xsd:IDREFS"
 			description "A list of identifiers. Each identifier points to an object of type <link>Annotation</link>, or a subtype thereof."
 			required true
 		}
 		representative {
-			type "ID"
+			type "xsd:ID"
 			description "An identifier that points to the representative item in the coreference chain."
 		}
 	}
 }
 
-element {
-	name "Markable"
+Markable {
 	parent "Region"
 	definition "Annotation type used if the referenced object is not already wrapped in a suitable annotation type that can be referenced."
 }
 
-element {
-	name "PhraseStructure"
+PhraseStructure {
 	parent "Annotation"
 	definition "A container for phrase structure information."
 	metadata {
 		categorySet {
-			type "String or URI"
+			type "xsd:string"
 			description "The URI for the category set."
 		}
 	}
 	properties {
 		constituents {
-			type "Set of IDs"
+			type "xsd:IDREFS"
 			description "The set of IDs for all of the <link>Constituent</link>s in the parse tree."
 			required true
 		}
 		root {
-			type "ID"
+			type "xsd:ID"
 			description "The ID for the <link>Constituent</link> or <link>Token<.link> that is the top of the tree."
 			required true
 		}
 	}
 }
 
-element {
-	name "Constituent"
+Constituent {
 	parent "Relation"
 	definition "A constituent of a <link>PhraseStructure</link> (parse tree)."
-	uri "$vocab/Constituent"
 	properties {
 		parent {
-			type "ID"
+			type "xsd:ID"
 			description "The parent (if any) of this constituent."
 			required true
 		}
 		children {
-			type "List of IDs"
+			type "xsd:IDREFS"
 			description "The children (if any) of this constituent. The children are typically other Constituent annotations or <link>Token</link>s."
 			required true
 		}
 	}
 }
 
-element {
-	name "DependencyStructure"
+DependencyStructure {
 	definition "A container for all dependency structure information."
 	parent "Annotation"
 	metadata {
 		dependencySet {
-			type "String or URI"
+			type "xsd:string"
 			description "The URI for a particular set of dependency labels."
 		}
 	}
 	properties {
 		dependencyType {
-			type "String or URI"
+			type "xsd:string"
 			description "The type of the dependencies; for example basic, collapsed, etc."
 		}
 		dependencies {
-			type "Set of IDs"
+			type "xsd:IDREFS"
 			description "The ID values of a set of annotations of type <tt>Dependency</tt>"
 			required true
 		}
 	}
 }
 
-element {
-	name "Dependency"
+Dependency {
 	definition "A dependency in a <link>DependencyStructure</link>"
 	parent "Relation"
 	properties {
 		governor {
-			type "ID"
+			type "xsd:ID"
 			description "The governor of the dependency."
 			required true
 		}
 		dependent {
-			type "ID"
+			type "xsd:ID"
 			description "The dependent."
 			required true
 		}
 	}
 }
 
-element {
-    name "Document"
+Document {
     definition "Any electronic media content (other than computer programs or system files), including text (language), audio recordings, images, videos, web pages, etc. A document may consist of several physical computer files."
     parent "Thing"
     properties {
         id {
-            type "String"
+            type "xsd:string"
             description "A unique identifier associated with the document."
             required true
         }
         source {
-            type "String or URI"
+            type "xsd:string"
             description "The source of the document."
         }
         sourceType {
-            type "String or URI"
+            type "xsd:string"
             description "Source types include creator, distributor, contributor, publisher, etc."
         }
         encoding {
-            type "String or URI"
+            type "xsd:string"
             description """The physical or digital manifestation of the resource. Encoding may be used
                 to determine the software, hardware or other equipment  to display or operate the
                 resource. Recommended best practice is to select a value from the list of Internet Media
@@ -435,7 +428,7 @@ element {
                 """
         }
         language {
-            type "String or URI"
+            type "xsd:string"
             description """A language of the intellectual content of the resource. Recommended best practice
                 for the values of the Language element is defined by  RFC 3066
                 [RFC 3066, http://www.ietf.org/rfc/ rfc3066.txt] which, in conjunction with ISO 639
@@ -449,14 +442,12 @@ element {
     }
 }
 
-element {
-    name "TextDocument"
+TextDocument {
     definition "Any electronic media content consisting of text (language). A text document may consist of several physical computer files."
     parent "Document"
 }
 
-element {
-    name "AudioDocument"
+AudioDocument {
     definition "Any electronic media content consisting of audio (language). An audio document may consist of several physical computer files."
     parent "Document"
 }
