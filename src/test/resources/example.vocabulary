@@ -1,0 +1,26 @@
+version = '1.0.0'
+
+Thing {
+    definition "The most generic type."
+    //properties {
+    //    id { type 'xsd:string'; description: 'Everything has an ID.' }
+    //}
+}
+
+Animal {
+    definition "Living things"
+    parent 'Thing'
+}
+
+Person {
+    definition "People"
+    parent 'Animal'
+}
+/*
+Person {
+    definition "People"
+    parent 'Animal'
+}
+*/
+
+
