@@ -20,7 +20,7 @@ Thing {
 	sameAs "$schema/Thing"
 	properties {
 		alternateName {
-			type "xsd:string"
+			type "String"
 			description "An alias for the item."
 		}
 	}
@@ -32,21 +32,21 @@ Annotation {
 	sameAs "$iso/DC-2318"
 	metadata {
 	    producer {
-	        type "xsd:string"
+	        type "List of URI"
 	        description "The software that produced the annotations."
 	    }
 	    rules {
-	        type "xsd:string"
+	        type "List of URI"
 	        description "The documentation (if any) for the rules that were used to identify the annotations."
 	    }
 	    type {
-	    	type "xsd:string"
+	    	type "String"
 	    	description "The value type of the annotations produced."
 	    }
 	}
 	properties {
 		id {
-			type "xsd:string"
+			type "String"
 			description "A unique identifier associated with the annotation."
 			required true
 		}
@@ -62,15 +62,15 @@ Region {
 	 property."""
 	properties {
 		targets {
-			type "xsd:IDREFS"
+			type "List of IDs"
 			description """IDs of a sequence of annotations covering the region of primary data referred to by this annotation. Used as an alternative to <em>start</em> and <em>end</em> to point to component annotations (e.g., a token sequence) rather than directly into primary data, or to link two or more annotations (e.g., in a coreference annotation)."""
 		}
 		start {
-			type "xsd:long"
+			type "Integer"
 			description "The starting offset (0-based) in the primary data."
 		}
 		end {
-			type "xsd:long"
+			type "Integer"
 			description "The ending offset (0-based) in the primary data."
 		}
 	}
@@ -83,7 +83,7 @@ grammatical relation such as subject-object, a semantic relation between meaning
 indicating the simultaneity or ordering in time of events or states, etc.'''
 	properties {
 		label {
-			type "xsd:string"
+			type "String or URI"
 			description "A category label."
 			required true
 		}
@@ -95,12 +95,12 @@ GenericRelation {
 	definition 'Any relation involving one or more arguments.'
 	properties {
 		relation {
-			type "xsd:ID"
+			type "ID"
 			description 'The head of the relation.'
 			required true
 		}
 		arguments {
-			type 'xsd:IDREFS'
+			type 'List of IDs'
 			description 'The arguments of the relation.'
 			required true
 		}
@@ -112,12 +112,12 @@ SemanticRole {
 	definition 'The underlying relationship that a participant has with the main predicate in a clause.'
 	properties {
 		head {
-			type "xsd:ID"
+			type "ID"
 			description 'The predicate.'
 			required true
 		}
 		argument {
-			type 'xsd:ID'
+			type 'ID'
 			description 'The element that fulfills the role relative to the predicate.'
 			required true
 		}
@@ -135,7 +135,7 @@ Sentence {
 	sameAs "$iso/DC-1386"
 	properties {
 		sentenceType {
-			type "xsd:string"
+			type "String or URI"
 			description "Values such as declarative, interrogative, exclamatory, question, fragment. Ideally a URI referencing a pre-defined descriptor."
 		}
 	}
@@ -153,19 +153,19 @@ VerbChunk {
 	discriminator 'vchunk'
 	properties {
 		vcType {
-			type "xsd:string"
+			type "String or URI"
 			description "Values such as finite, non-finite, participle, modal, special (e.g., 'is going to investigate')."
 		}
 		tense {
-			type "xsd:string"
+			type "String or URI"
 			description "Provides tense information for the verb. Example values include BeVBG, BeVBN, FutCon, HaveVBN, Pas, PasCon, PasPer, PasPerCon, Per, Pre, PreCon, PrePer, PrePerCon, SimFut, SimPas, SimPre, none"
 		}
 		voice {
-			type "xsd:string"
+			type "String or URI"
 			description "Indicates if the verb group is active or passive. Possible values include ACTIVE, PASSIVE, or NONE"
 		}
 		neg {
-			type "xsd:string"
+			type "String or URI"
 			description "Indicates whether or not the verb is negated. Values include YES, NO."
 		}
 	}
@@ -178,22 +178,22 @@ NamedEntity {
     discriminator 'ne'
     metadata {
     	namedEntityCategorySet {
-    		type "xsd:string"
+    		type "String or URI"
     		description "The set of values that can be used for the category property."
     	}
     }
     properties {
     	category {
-    		type "xsd:string"
+    		type "String or URI"
     		required true
     		description "The type of named entity. Typically one of DATE, PERSON, ORGANIZATION, or LOCATION."
     	}
     	type {
-    		type "xsd:string"
+    		type "String or URI"
     		description "A type attribute for the entity. For example the type of location or organization."
     	}
         gender {
-            type "xsd:string"
+            type "String or URI"
             description "A value such as male, female, unknown. Ideally a URI referencing a pre-defined descriptor."
         }
     }
@@ -207,7 +207,7 @@ Date {
     deprecated NE_DEPRECATED
     properties {
         dateType {
-            type "xsd:string"
+            type "String or URI"
             description "Sub-type information such as date, datetime, time, etc. Ideally a URI referencing a pre-defined descriptor."
         }
     }
@@ -220,7 +220,7 @@ Location {
     deprecated NE_DEPRECATED
     properties {
         locType {
-            type "xsd:string"
+            type "String or URI"
             description "Location type: country, city, GPE, sea, lake, etc. Ideally a URI referencing a pre-defined descriptor."
         }
     }
@@ -233,7 +233,7 @@ Organization {
     deprecated NE_DEPRECATED
     properties {
         orgType {
-            type "xsd:string"
+            type "String or URI"
             description "Sub-type information (e.g., government, educational, religious, political, museum, hotel, medical, etc.). Ideally a URL referencing a pre-defined descriptor."
         }
     }
@@ -247,7 +247,7 @@ Person {
     deprecated NE_DEPRECATED
     properties {
         gender {
-            type "xsd:string"
+            type "String or URI"
             description "A value such as male, female, unknown. Ideally a URI referencing a pre-defined descriptor."
         }
     }
@@ -259,41 +259,41 @@ Token {
     similarTo "$iso/DC-1403"
     metadata {
     	posTagSet {
-    		type "xsd:string"
+    		type "String or URI"
     		description "The definition of the tag set used by the part-of-speech tagger."
     	}
     }
     properties {
         pos {
-            type "xsd:string"
+            type "String or URI"
             description "Part-of-speech tag associated with the token."
             discriminator true
         }
         lemma {
-            type "xsd:string"
+            type "String or URI"
             description "The root (base) form associated with the token. URI may point to a lexicon entry."
             discriminator true
         }
         tokenType {
-            type "xsd:string"
+            type "String or URI"
             description "Sub-type such as word, punctuation, abbreviation, number, symbol, etc. Ideally a URI referencing a pre-defined descriptor."
         }
         orth {
-            type "xsd:string"
+            type "String or URI"
             description "Orthographic properties of the token such as LowerCase, UpperCase, UpperInitial, etc. Ideally a URI referencing a pre-defined descriptor."
             discriminator true
         }
         morph {
-        	type "http://vocab.lappsgrid.org/schema/1.3.0/morphology.json-schema"
-        	description "First experimental attempt at a morphology"
+        	type "Map"
+        	description ""
         	discriminator true
         }
         length {
-            type "xsd:long"
+            type "Integer"
             description "The length of the token"
         }
         word {
-        	type "xsd:string"
+        	type "String"
         	description "The surface string in the primary data covered by this Token."
         }
     }
@@ -305,12 +305,12 @@ Coreference {
 	discriminator 'coref'
 	properties {
 		mentions {
-			type "xsd:IDREFS"
+			type "List of IDs"
 			description "A list of identifiers. Each identifier points to an object of type <link>Annotation</link>, or a subtype thereof."
 			required true
 		}
 		representative {
-			type "xsd:ID"
+			type "ID"
 			description "An identifier that points to the representative item in the coreference chain."
 		}
 	}
@@ -326,18 +326,18 @@ PhraseStructure {
 	definition "A container for phrase structure information."
 	metadata {
 		categorySet {
-			type "xsd:string"
+			type "String or URI"
 			description "The URI for the category set."
 		}
 	}
 	properties {
 		constituents {
-			type "xsd:IDREFS"
+			type "Set of IDs"
 			description "The set of IDs for all of the <link>Constituent</link>s in the parse tree."
 			required true
 		}
 		root {
-			type "xsd:ID"
+			type "ID"
 			description "The ID for the <link>Constituent</link> or <link>Token<.link> that is the top of the tree."
 			required true
 		}
@@ -349,12 +349,12 @@ Constituent {
 	definition "A constituent of a <link>PhraseStructure</link> (parse tree)."
 	properties {
 		parent {
-			type "xsd:ID"
+			type "ID"
 			description "The parent (if any) of this constituent."
 			required true
 		}
 		children {
-			type "xsd:IDREFS"
+			type "List of IDs"
 			description "The children (if any) of this constituent. The children are typically other Constituent annotations or <link>Token</link>s."
 			required true
 		}
@@ -366,17 +366,17 @@ DependencyStructure {
 	parent "Annotation"
 	metadata {
 		dependencySet {
-			type "xsd:string"
+			type "String or URI"
 			description "The URI for a particular set of dependency labels."
 		}
 	}
 	properties {
 		dependencyType {
-			type "xsd:string"
+			type "String or URI"
 			description "The type of the dependencies; for example basic, collapsed, etc."
 		}
 		dependencies {
-			type "xsd:IDREFS"
+			type "Set of IDs"
 			description "The ID values of a set of annotations of type <tt>Dependency</tt>"
 			required true
 		}
@@ -388,12 +388,12 @@ Dependency {
 	parent "Relation"
 	properties {
 		governor {
-			type "xsd:ID"
+			type "ID"
 			description "The governor of the dependency."
 			required true
 		}
 		dependent {
-			type "xsd:ID"
+			type "ID"
 			description "The dependent."
 			required true
 		}
@@ -405,20 +405,20 @@ Document {
     parent "Thing"
     properties {
         id {
-            type "xsd:string"
+            type "String"
             description "A unique identifier associated with the document."
             required true
         }
         source {
-            type "xsd:string"
+            type "String or URI"
             description "The source of the document."
         }
         sourceType {
-            type "xsd:string"
+            type "String or URI"
             description "Source types include creator, distributor, contributor, publisher, etc."
         }
         encoding {
-            type "xsd:string"
+            type "String or URI"
             description """The physical or digital manifestation of the resource. Encoding may be used
                 to determine the software, hardware or other equipment  to display or operate the
                 resource. Recommended best practice is to select a value from the list of Internet Media
@@ -428,7 +428,7 @@ Document {
                 """
         }
         language {
-            type "xsd:string"
+            type "String or URI"
             description """A language of the intellectual content of the resource. Recommended best practice
                 for the values of the Language element is defined by  RFC 3066
                 [RFC 3066, http://www.ietf.org/rfc/ rfc3066.txt] which, in conjunction with ISO 639
