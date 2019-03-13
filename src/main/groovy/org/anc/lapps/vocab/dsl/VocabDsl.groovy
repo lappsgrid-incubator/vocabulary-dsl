@@ -180,10 +180,10 @@ class VocabDsl {
             }
             theClass = ontology.createClass(VOCAB + element.name)
             classes[element.name] = theClass
-            if (!element.definition) {
-                throw new VocabularyException("Element ${element.name} is missing a definition field.")
-            }
-            else {
+            if (element.definition) {
+//                throw new VocabularyException("Element ${element.name} is missing a definition field.")
+//            }
+//            else {
                 theClass.addComment(ontology.createLiteral(element.definition))
             }
 

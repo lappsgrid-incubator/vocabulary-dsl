@@ -12,6 +12,13 @@ if (versionFile.exists()) {
 	version = versionFile.text.trim()
 }
 
+TYPE="http://vocab.lappsgrid.org/schema/$version/Datatype"
+
+// A helper function to generate the URI for one of our custom datatypes.
+String datatype(type) {
+    "http://vocab.lappsgrid.org/schema/$version/Datatype#$type"
+}
+
 // Message to be displayed for deprecated named entities.
 NE_DEPRECATED = '''Use <link>NamedEntity</link> with appropriate @category and @type attributes instead. This annotation type will be removed in a future version of the vocabulary.'''
 
@@ -284,7 +291,7 @@ Token {
             discriminator true
         }
         morph {
-        	type "Map"
+        	type "$TYPE#morphology"
         	description ""
         	discriminator true
         }

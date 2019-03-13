@@ -4,6 +4,16 @@ package org.anc.lapps.vocab.dsl
  * @author Keith Suderman
  */
 class PropertyDelegate {
+    static final String DATATYPE = "http://vocab.lappsgrid.org/schema/1.3.0/Datatype"
+    static final TYPE_MAP = [
+            ID: "xsd:ID",
+            "Integer": "xsd:long",
+            "List of IDs": "xsd:IDREFS",
+            "List of URI": "$DATATYPE#list_uri",
+            "Set of IDs": "xsd:IDREFS",
+            "String": "xsd:string",
+            "String or URI": "xsd:string"
+    ]
     String type
     String description
     boolean required = false;
@@ -23,7 +33,7 @@ class PropertyDelegate {
     }
 
     void type(String type) {
-        this.type = type
+        this.type = TYPE_MAP[type] ?: type
     }
 
     void description(String description) {
