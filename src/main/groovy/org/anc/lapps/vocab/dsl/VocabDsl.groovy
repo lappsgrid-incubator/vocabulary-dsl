@@ -4,10 +4,13 @@ import org.apache.jena.ontology.AnnotationProperty
 import org.apache.jena.ontology.DatatypeProperty
 import org.apache.jena.ontology.OntClass
 import org.apache.jena.ontology.OntModel
+import org.apache.jena.ontology.OntModelSpec
 import org.apache.jena.ontology.OntResource
 import org.apache.jena.rdf.model.Model
 import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.rdf.model.Property
+import org.apache.jena.rdf.model.Resource
+import org.apache.jena.riot.Lang
 import org.apache.jena.riot.RDFDataMgr
 import org.apache.jena.riot.RDFFormat
 import org.codehaus.groovy.control.CompilerConfiguration
@@ -151,13 +154,23 @@ class VocabDsl {
     void makeOwl(File script, RDFFormat format, File destination, String ext) {
         compile(script.text)
 
-//        Property similarTo = makeProperty('similarTo')
-
         Map<String,OntClass> classes = [:]
+        Map<String,Resource> resources = [:]
         Map<String,Property> properties = [:]
-        ontology = ModelFactory.createOntologyModel()
-        println "Adding dummy node with versionInfo."
-        OntResource ontResource = ontology.createOntology("http://vocab.lappsgrid.org")
+
+        def resource = { String name ->
+            Resource resource = resources[name]
+            if (resource == null) {
+                resource = ontology.createResource(name)
+                resources[name] = resource
+            }
+            return resource
+        }
+
+        // Issue #10. Specify a model that does not do inferencing so only
+        // relationships expressed in model are included in the output.
+        ontology = ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM)
+        OntResource ontResource = ontology.createOntology(VOCAB)
         ontResource.addVersionInfo(ontology.createLiteral(bindings.version).toString())
         elements.each { ElementDelegate element ->
             println "Processing ${element.name}"
@@ -167,7 +180,12 @@ class VocabDsl {
             }
             theClass = ontology.createClass(VOCAB + element.name)
             classes[element.name] = theClass
-            theClass.addComment(ontology.createLiteral(element.definition))
+            if (!element.definition) {
+                throw new VocabularyException("Element ${element.name} is missing a definition field.")
+            }
+            else {
+                theClass.addComment(ontology.createLiteral(element.definition))
+            }
 
             // Set the parent node.
             // TODO: It should likely be an error if the element does not have a
@@ -178,29 +196,26 @@ class VocabDsl {
                 if (!parent) {
                     throw new VocabularyException("Undefined parent class: ${element.parent}")
                 }
-//                if (element == parent) {
-//                    println "Skipping parent: element == parent"
-//                }
-//                else if (element.equals(parent)) {
-//                    println "Skipping parent: element.equals(parent)"
-//                }
-//                else {
-//                    println "Superclass for ${element.name} is ${element.parent}"
-                    theClass.setSuperClass(parent)
-//                }
+                theClass.setSuperClass(parent)
             }
-            element.sameAs.each { resource ->
-                theClass.addSameAs(ontology.createResource(resource))
+            element.sameAs.each { name ->
+                theClass.addSameAs(resource(name))
             }
             element.metadata.each { String key, PropertyDelegate value ->
                 Property property = makeMetadata(key)
                 property.addComment(ontology.createLiteral(value.description))
-                theClass.addProperty(property, value.type)
+                property.addDomain(theClass)
+                property.addRange(resource(value.type))
+//                theClass.addProperty(property, value.type)
             }
             element.properties.each { String name, PropertyDelegate value ->
                 Property property = makeProperty(element.name, name)
-                property.addComment(ontology.createLiteral(value.description))
-                theClass.addProperty(property, value.type)
+                if (value.description) {
+                    property.addComment(ontology.createLiteral(value.description))
+                }
+                property.addDomain(theClass)
+                property.addRange(resource(value.type))
+//                theClass.addProperty(property, value.type)
             }
 
         }
@@ -280,7 +295,7 @@ class VocabDsl {
 
     void makeDiscriminators(File script, File destination) {
         List<String> order = ['annotation',
-//                              'chunk',
+                              'chunk',
                               'paragraph',
                               'sentence',
                               'token',
@@ -294,8 +309,8 @@ class VocabDsl {
                               'nchunk',
                               'vchunk',
                               'lemma',
-//                              'lookup',
-//                              'matches',
+                              'lookup',
+                              'matches',
                               'markable',
                               'dependency-structure',
                               'phrase-structure',
@@ -303,11 +318,6 @@ class VocabDsl {
                               'dependency']
 
         compile(script.text)
-//        elements << new ElementDelegate(name:'Chunk', discriminator:'chunk', definition: "Any type of annotations that segments the primary data into chunks.", parent: 'annotation')
-//        elements << new ElementDelegate(name:'Token#pos', discriminator: 'pos', definition: "Part-Of-Speech tag. The tagset used should be specified in metadata.", parent: 'annotation')
-//        elements << new ElementDelegate(name:'Token#lemma', discriminator: 'lemma', definition: 'Base form of a word or token.', parent: 'annotation')
-//        elements << new ElementDelegate(name:'Lookup', discriminator: 'lookup', definition: 'Dictionary based annotations. Used in GATE.', parent: 'annotation')
-//        elements << new ElementDelegate(name:'Matches', discriminator: 'matches', definition: 'Definition needed.', parent: 'annotation')
 
         elements.each {
             if (!it.discriminator) {
@@ -450,7 +460,6 @@ public class ${className} {
                     out.println "\t@Deprecated"
                 }
                 out.println "\tpublic static final String ${toSnakeCase(e.name) } = \"http://vocab.lappsgrid.org/${e.name}\";"
-//                e.print(System.out)
             }
             out.println "}"
         }
@@ -650,7 +659,7 @@ public class Metadata {
                     break
                 default:
                     println "ERROR: Unknown output format ${params.r}"
-                    println "Use one of 'owl', 'nq', 'n3', or 'jsonld'."
+                    println "Use one of 'owl', 'rdf', 'nq', 'n3', 'ttl', or 'jsonld'."
                     return
             }
             dsl.makeOwl(scriptFile, format, destination, ext)
