@@ -32,6 +32,12 @@ class VocabDslTest {
     }
 
     @Test
+    void generateXSD() {
+        String[] args = "--xsd src/test/resources/lapps.vocab".split()
+        VocabDsl.main(args)
+    }
+
+    @Test
     void generateExampleVocabulary() {
         ['ttl', 'owl', 'rdf', 'jsonld'].each { String format ->
             String[] args = "-r $format src/test/resources/example.vocabulary".split()
@@ -43,5 +49,18 @@ class VocabDslTest {
     void generateExampleTTL() {
         String[] args = "-r ttl src/test/resources/example.vocabulary".split()
         VocabDsl.main(args)
+    }
+
+    @Test
+    void generateAll() {
+        ['ttl', 'owl', 'rdf', 'jsonld'].each { String format ->
+            String[] args = "-r $format src/test/resources/lapps.vocab".split()
+            VocabDsl.main(args)
+        }
+    }
+
+    @Test
+    void generateSchema() {
+        VocabDsl.main("-x src/test/resources/lapps.vocab".split())
     }
 }

@@ -1,0 +1,22 @@
+Datatypes {
+	simple('list_uri') {
+	    restriction {
+	        simpleType {
+	            list itemType:'xs:anyURI'
+	        }
+	    }
+	}
+	complex('morphology') {
+	    sequence {
+	        element type:'xs:string', name:'majorWordClass'
+	        element name:'wordClass', type:'xs:string'
+	        element name:'prefix', type:'xs:string'
+	        element name:'suffix', type:'xs:string'
+	        element name:'number', type:'xs:string'
+	        element name:'person', type:'xs:string'
+	        element name:'syntax', type:'xs:string'
+	        element name:'tense', type:'xs:string'
+	    }
+	}
+}
+

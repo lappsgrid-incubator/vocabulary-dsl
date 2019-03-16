@@ -1,5 +1,8 @@
 package org.anc.lapps.vocab.dsl
 
+import groovy.xml.XmlUtil
+import org.apache.jena.datatypes.RDFDatatype
+import org.apache.jena.datatypes.xsd.XSDDatatype
 import org.apache.jena.ontology.AnnotationProperty
 import org.apache.jena.ontology.DatatypeProperty
 import org.apache.jena.ontology.OntClass
@@ -41,6 +44,7 @@ class VocabDsl {
     Binding bindings = new Binding()
     List<ElementDelegate> elements //= []
     Map<String, ElementDelegate> elementIndex //= [:]
+    Node schema
 
     // Ontology used when generating RDF/OWL.  Instances are created and
     // destroyed as needed.
@@ -181,11 +185,11 @@ class VocabDsl {
             theClass = ontology.createClass(VOCAB + element.name)
             classes[element.name] = theClass
             if (element.definition) {
-//                throw new VocabularyException("Element ${element.name} is missing a definition field.")
-//            }
-//            else {
                 theClass.addComment(ontology.createLiteral(element.definition))
             }
+//            else {
+//                throw new VocabularyException("Element ${element.name} is missing a definition field.")
+//            }
 
             // Set the parent node.
             // TODO: It should likely be an error if the element does not have a
@@ -266,15 +270,22 @@ class VocabDsl {
             included.metaClass = getMetaClass(included.class, shell)
             included.run()
         }
-
-        meta.element = { Closure cl ->
-            ElementDelegate element = new ElementDelegate(elements)
-            cl.delegate = element
+        meta.Datatypes = { Closure cl ->
+            cl.delegate = new DatatypeDelegate()
             cl.resolveStrategy = Closure.DELEGATE_FIRST
             cl()
-            elements << element
-            elementIndex[element.name] = element
+            schema = cl.delegate.root
         }
+        meta.Datatype = meta.Datatypes
+
+//        meta.element = { Closure cl ->
+//            ElementDelegate element = new ElementDelegate(elements)
+//            cl.delegate = element
+//            cl.resolveStrategy = Closure.DELEGATE_FIRST
+//            cl()
+//            elements << element
+//            elementIndex[element.name] = element
+//        }
 
         meta.methodMissing = { String name,  args ->
             if (args.size() != 1 || !(args[0] instanceof Closure) ) {
@@ -366,6 +377,22 @@ class VocabDsl {
             return element.discriminator
         }
         return element.name.replaceAll("([a-z])([A-Z])", '$1-$2').toLowerCase()
+    }
+
+    void writeSchema(File scriptFile, File destination) {
+        File file = new File(destination, "Datatype.xsd")
+        compile(scriptFile.text)
+        StringWriter string = new StringWriter()
+        PrintWriter writer = new PrintWriter(string)
+        writer.write('<?xml version="1.0" encoding="UTF-8"?>\n')
+        XmlNodePrinter printer = new XmlNodePrinter(writer)
+        printer.setPreserveWhitespace(true)
+        printer.print(schema)
+//        new XmlNodePrinter(preserveWhitespace: true).print(schema)
+//        String xml = XmlUtil.serialize(schema)
+//        println XmlUtil.serialize(schema)
+        file.text = string.toString()
+        println "Wrote ${file.path}"
     }
 
     void writeDiscriminator(BufferedWriter writer, ElementDelegate element) {
@@ -568,7 +595,8 @@ public class Metadata {
         cli.f(longOpt:'features', 'generates the Features.java with element property names.')
         cli.p(longOpt:'package', args:1, 'package name for the Java class.')
         cli.o(longOpt:'output', args:1, 'output directory.')
-        cli.x(longOpt:'debug', 'prints a data dump rather than generating anything.')
+        cli.b(longOpt:'debug', 'prints a data dump rather than generating anything.')
+        cli.x(longOpt:'xsd', 'generates the XML Schema for any datatypes defined.')
         cli.'?'(longOpt:'help', 'displays this usage messages.')
 
         def params = cli.parse(args)
@@ -627,11 +655,15 @@ public class Metadata {
             dsl.makeMetadataJava(scriptFile, packageName, destination)
             return
         }
+        if (params.x) {
+            dsl.writeSchema(scriptFile, destination)
+            return
+        }
         if (params.d) {
             dsl.makeDiscriminators(scriptFile, destination)
             return
         }
-        if (params.x) {
+        if (params.b) {
             dsl.dump(scriptFile)
             return
         }

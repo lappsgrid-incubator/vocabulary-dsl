@@ -1,0 +1,10 @@
+Datatypes {
+	simple('list_uri') {
+	    restriction {
+	        simpleType {
+	            list(itemType:'xs:anyURI', '')
+	        }
+	    }
+	}
+}
+
