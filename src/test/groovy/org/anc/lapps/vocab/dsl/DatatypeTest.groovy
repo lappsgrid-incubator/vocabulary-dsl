@@ -18,6 +18,7 @@ package org.anc.lapps.vocab.dsl
 
 import groovy.xml.MarkupBuilder
 import groovy.xml.XmlUtil
+import org.apache.jena.datatypes.xsd.XSDDatatype
 import org.junit.Ignore
 import org.junit.Test
 
@@ -26,6 +27,11 @@ import org.junit.Test
  */
 @Ignore
 class DatatypeTest {
+
+    @Test
+    void print() {
+        println XSDDatatype.XSDIDREF.getURI()
+    }
 
     @Test
     void datatype() {

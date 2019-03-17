@@ -3,6 +3,7 @@ package org.anc.lapps.vocab.dsl
 import groovy.xml.XmlUtil
 import org.apache.jena.datatypes.RDFDatatype
 import org.apache.jena.datatypes.xsd.XSDDatatype
+import org.apache.jena.datatypes.xsd.impl.XSDPlainType
 import org.apache.jena.ontology.AnnotationProperty
 import org.apache.jena.ontology.DatatypeProperty
 import org.apache.jena.ontology.OntClass
@@ -13,9 +14,11 @@ import org.apache.jena.rdf.model.Model
 import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.rdf.model.Property
 import org.apache.jena.rdf.model.Resource
+import org.apache.jena.rdf.model.ResourceFactory
 import org.apache.jena.riot.Lang
 import org.apache.jena.riot.RDFDataMgr
 import org.apache.jena.riot.RDFFormat
+import org.apache.jena.vocabulary.XSD
 import org.codehaus.groovy.control.CompilerConfiguration
 import org.codehaus.groovy.control.customizers.ImportCustomizer
 import groovy.cli.commons.CliBuilder
@@ -26,6 +29,8 @@ import groovy.cli.commons.CliBuilder
 class VocabDsl {
     static final String VOCAB = 'http://vocab.lappsgrid.org/'
     static final String EXTENSION = ".vocab"
+
+    Map TYPE_MAP
 
     // The template used to generate the HTML page for a single Vocabulary element.
     String FILE_TEMPLATE = "src/test/resources/template.groovy"
@@ -49,6 +54,7 @@ class VocabDsl {
     // Ontology used when generating RDF/OWL.  Instances are created and
     // destroyed as needed.
     OntModel ontology
+    String version = "1.3.0"
 
     void run(File file, File destination) {
         parentDir = file.parentFile
@@ -81,6 +87,20 @@ class VocabDsl {
         return configuration
     }
 
+    void initTypeMap() {
+        final String DATATYPE = "$VOCAB/$version/Datatype"
+        final Resource IDREFS = ResourceFactory.createResource("http://www.w3.org/2001/XMLSchema#IDREFS")
+        TYPE_MAP = [
+            ID: XSD.ID,
+            "Integer": XSD.xlong,
+            "List of IDs": IDREFS,
+            "List of URI": ResourceFactory.createResource("$DATATYPE#list_uri"),
+            "Set of IDs": IDREFS,
+            "String": XSD.xstring,
+            "String or URI": XSD.xstring
+        ]
+    }
+
     void run(String scriptString, File destination) {
         this.destination = destination
         compile(scriptString)
@@ -102,6 +122,7 @@ class VocabDsl {
         elementIndex = [:]
         ClassLoader loader = getLoader()
         CompilerConfiguration configuration = getCompilerConfiguration()
+        bindings.setVariable('version', version)
         GroovyShell shell = new GroovyShell(loader, bindings, configuration)
 
         Script script = shell.parse(scriptString)
@@ -114,6 +135,23 @@ class VocabDsl {
     void dump(File file) {
         compile(file.text)
         elements.each { it.print() }
+    }
+
+    Resource type(String type) {
+        Resource resource = TYPE_MAP[type]
+        if (resource) {
+            return resource
+        }
+        if (type.startsWith("Datatype#")) {
+            resource = ontology.createResource(VOCAB + type)
+        }
+        else {
+            resource = ontology.createResource(type)
+        }
+//        println "Types"
+//        TYPE_MAP.each { k,v -> println "$k -> $v" }
+        TYPE_MAP[type] = resource
+        return resource
     }
 
     void makeHtml() {
@@ -157,19 +195,21 @@ class VocabDsl {
 
     void makeOwl(File script, RDFFormat format, File destination, String ext) {
         compile(script.text)
+        initTypeMap()
 
         Map<String,OntClass> classes = [:]
         Map<String,Resource> resources = [:]
         Map<String,Property> properties = [:]
 
-        def resource = { String name ->
-            Resource resource = resources[name]
-            if (resource == null) {
-                resource = ontology.createResource(name)
-                resources[name] = resource
-            }
-            return resource
-        }
+//        def resource = { String name ->
+//
+//            Resource resource = resources[name]
+//            if (resource == null) {
+//                resource = ontology.createResource(type(name))
+//                resources[name] = resource
+//            }
+//            return resource
+//        }
 
         // Issue #10. Specify a model that does not do inferencing so only
         // relationships expressed in model are included in the output.
@@ -203,13 +243,13 @@ class VocabDsl {
                 theClass.setSuperClass(parent)
             }
             element.sameAs.each { name ->
-                theClass.addSameAs(resource(name))
+                theClass.addSameAs(type(name))
             }
             element.metadata.each { String key, PropertyDelegate value ->
                 Property property = makeMetadata(key)
                 property.addComment(ontology.createLiteral(value.description))
                 property.addDomain(theClass)
-                property.addRange(resource(value.type))
+                property.addRange(type(value.type))
 //                theClass.addProperty(property, value.type)
             }
             element.properties.each { String name, PropertyDelegate value ->
@@ -218,7 +258,7 @@ class VocabDsl {
                     property.addComment(ontology.createLiteral(value.description))
                 }
                 property.addDomain(theClass)
-                property.addRange(resource(value.type))
+                property.addRange(type(value.type))
 //                theClass.addProperty(property, value.type)
             }
 
@@ -586,7 +626,7 @@ public class Metadata {
         CliBuilder cli = new CliBuilder()
         cli.usage = "vocab [-?|-v] -d <dsl> -i <template> -h <template> -o <directory>"
         cli.header = "Generates LAPPS Vocabulary web site a LAPPS Vocab DSL file."
-        cli.v(longOpt:'version', 'displays current application version number.')
+        cli.V(longOpt:'version', 'displays current application version number.')
         cli.h(longOpt:'html', args:1,'template used to generate html pages for vocabulary items.')
         cli.r(longOpt:'rdf', args:1, 'generates RDF/OWL ontology in the specifed format')
         cli.i(longOpt:'index', args:1, 'template used to generate the index.html page.')
@@ -596,6 +636,7 @@ public class Metadata {
         cli.p(longOpt:'package', args:1, 'package name for the Java class.')
         cli.o(longOpt:'output', args:1, 'output directory.')
         cli.b(longOpt:'debug', 'prints a data dump rather than generating anything.')
+        cli.v(longOpt:'vocabVersion', args: 1, 'version of the vocabulary being generated.')
         cli.x(longOpt:'xsd', 'generates the XML Schema for any datatypes defined.')
         cli.'?'(longOpt:'help', 'displays this usage messages.')
 
@@ -608,7 +649,7 @@ public class Metadata {
             cli.usage()
             return
         }
-        if (params.v) {
+        if (params.V) {
             println()
             println "LAPPS Vocabulary DSL v" + Version.getVersion()
             println "Copyright 2019 American National Corpus"
@@ -637,6 +678,9 @@ public class Metadata {
             return
         }
         VocabDsl dsl = new VocabDsl()
+        if (params.v) {
+            dsl.version = params.v
+        }
         File scriptFile = new File(files[0])
         if (params.j) {
             String packageName = "org.lappsgrid.discrimintor"

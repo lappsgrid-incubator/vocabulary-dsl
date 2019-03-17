@@ -6,24 +6,26 @@
 schema="http://schema.org"
 iso="http://www.isocat.org/datcat"
 
-version='1.3.0'
-//File versionFile = new File('VERSION')
-//if (versionFile.exists()) {
-//	version = versionFile.text.trim()
-//}
+/*
+version='1.2.9-SNAPSHOT'
+File versionFile = new File('VERSION')
+if (versionFile.exists()) {
+	version = versionFile.text.trim()
+}
+*/
 
-TYPE="http://vocab.lappsgrid.org/schema/$version/Datatype"
+//TYPE = "http://vocab.lappsgrid.org/$version/Datatype"
+TYPE = "Datatype"
 
 XSD = [
-    id: 'xs:ID',
-    uri: 'xs:anyURI',
-    string: 'xs:string'
+	string: 'xsd:string',
+	id:     'xsd:ID',
+	idrefs: 'xsd:IDREFS',
+	uri:    'xsd:anyURI',
+	long:   'xsd:long',
+	list_uri: "${TYPE}#list_uri",
+	morphology: "${TYPE}#morphology"
 ]
-
-// A helper function to generate the URI for one of our custom datatypes.
-String datatype(type) {
-    "http://vocab.lappsgrid.org/schema/$version/Datatype#$type"
-}
 
 // Message to be displayed for deprecated named entities.
 NE_DEPRECATED = '''Use <link>NamedEntity</link> with appropriate @category and @type attributes instead. This annotation type will be removed in a future version of the vocabulary.'''
@@ -33,7 +35,7 @@ Thing {
 	sameAs "$schema/Thing"
 	properties {
 		alternateName {
-			type XSD.string
+			type "String"
 			description "An alias for the item."
 		}
 	}
@@ -212,6 +214,45 @@ NamedEntity {
     }
 }
 
+Morphology {
+	parent 'Region'
+	definition 'Morphological description for a word or token.'
+	properties {
+		wordClass {
+			type 'String'
+			description ''
+		}
+		majorWordClass {
+			type 'String'
+			description ''
+		}
+		syntax {
+			type 'String'
+			description ''
+		}
+		tense {
+			type 'String'
+			description ''
+		}
+		person {
+			type 'String'
+			description ''
+		}
+		number {
+			type 'String'
+			description ''
+		}
+		prefix {
+			type 'String'
+			description ''
+		}
+		suffix {
+			type 'String'
+			description ''
+		}
+	}
+}
+
 Date {
     parent "NamedEntity"
     definition "A reference to a date or period."
@@ -296,9 +337,9 @@ Token {
             description "Orthographic properties of the token such as LowerCase, UpperCase, UpperInitial, etc. Ideally a URI referencing a pre-defined descriptor."
             discriminator true
         }
-        morphology {
-        	type "${TYPE}#morphology"
-        	description ""
+        morph {
+        	type XSD.morphology
+        	description "Morphology"
         	discriminator true
         }
         length {
@@ -465,7 +506,9 @@ AudioDocument {
     parent "Document"
 }
 
-
+/*
+ * Custom types used to generate the XML Schema
+ */
 Datatypes {
 	simple('list_uri') {
 	    restriction {
@@ -476,7 +519,7 @@ Datatypes {
 	}
 	complex('morphology') {
 	    sequence {
-	        element type:'xs:string', name:'majorWordClass'
+	        element name:'majorWordClass', type:'xs:string'
 	        element name:'wordClass', type:'xs:string'
 	        element name:'prefix', type:'xs:string'
 	        element name:'suffix', type:'xs:string'

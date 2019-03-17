@@ -1,0 +1,20 @@
+version = '1'
+
+Thing {
+    definition "The top of the ontology."
+    properties {
+        list {
+            type "List of IDs"
+            description "list"
+        }
+        set {
+            type "Set of IDs"
+            description "set"
+        }
+        string {
+            type "String"
+            description "string"
+        }
+
+    }
+}

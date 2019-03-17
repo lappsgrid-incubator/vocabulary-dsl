@@ -27,8 +27,13 @@ class VocabDslTest {
 
     @Test
     void generateTTL() {
-        String[] args = "-r ttl src/test/resources/lapps.vocab".split()
+        String[] args = "-r ttl -v 1.0.0 src/test/resources/lapps.vocab".split()
         VocabDsl.main(args)
+    }
+
+    @Test
+    void generateIdrefs() {
+        VocabDsl.main("-r ttl -v 1.0.0 src/test/resources/idref.vocab".split())
     }
 
     @Test
@@ -63,4 +68,5 @@ class VocabDslTest {
     void generateSchema() {
         VocabDsl.main("-x src/test/resources/lapps.vocab".split())
     }
+
 }
