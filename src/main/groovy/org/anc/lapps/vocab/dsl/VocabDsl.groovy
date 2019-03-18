@@ -54,7 +54,8 @@ class VocabDsl {
     // Ontology used when generating RDF/OWL.  Instances are created and
     // destroyed as needed.
     OntModel ontology
-    String version = "1.3.0"
+    String version  = "1.3.0"
+    boolean release = false
 
     void run(File file, File destination) {
         parentDir = file.parentFile
@@ -88,7 +89,13 @@ class VocabDsl {
     }
 
     void initTypeMap() {
-        final String DATATYPE = "$VOCAB/$version/Datatype"
+        String DATATYPE
+        if (release) {
+            DATATYPE = "$VOCAB/Datatype"
+        }
+        else {
+            DATATYPE = "$VOCAB/$version/Datatype"
+        }
         final Resource IDREFS = ResourceFactory.createResource("http://www.w3.org/2001/XMLSchema#IDREFS")
         TYPE_MAP = [
             ID: XSD.ID,
@@ -143,7 +150,13 @@ class VocabDsl {
             return resource
         }
         if (type.startsWith("Datatype#")) {
-            resource = ontology.createResource(VOCAB + type)
+//            String v = version.replace("-SNAPSHOT", "").replaceAll("-RC\\d*", "")
+            if (release) {
+                resource = ontology.createResource("${VOCAB}/${type}")
+            }
+            else {
+                resource = ontology.createResource("${VOCAB}/${version}/${type}")
+            }
         }
         else {
             resource = ontology.createResource(type)
@@ -170,7 +183,13 @@ class VocabDsl {
                     parent = delegate.parent
                 }
                 // params is the data model to be passed to the template
-                def params = [ element:element, elements:elementIndex, parents:parents, version:bindings.getVariable('version') ]
+                def params = [
+                        element:element,
+                        elements:elementIndex,
+                        parents:parents,
+                        version:bindings.getVariable('version'),
+                        release:release
+                ]
                 // file is where the generated HTML will be written.
                 File file = new File(destination, "${element.name}.html")
                 // Call the template to generate the HTML from the model and
@@ -383,9 +402,9 @@ class VocabDsl {
                 writer.println("bank(2) {")
                 close = true
             }
-            else {
-                writer.println "version='${bindings.version}'"
-            }
+//            else {
+//                writer.println "version='${bindings.version}'"
+//            }
 
             order.each { String name ->
                 ElementDelegate element = elements.find { it.discriminator == name }
@@ -470,7 +489,7 @@ class VocabDsl {
             throw new FileNotFoundException("Unable to find the index template.")
         }
         TemplateEngine template = new TemplateEngine(file)
-        String html = template.generate(roots: getTrees(), version:bindings.version)
+        String html = template.generate(roots: getTrees(), version:bindings.version, release:release)
         File destination = new File(destination, 'index.html')
         destination.text = html
         println "Wrote ${destination.path}"
@@ -629,6 +648,7 @@ public class Metadata {
         cli.V(longOpt:'version', 'displays current application version number.')
         cli.h(longOpt:'html', args:1,'template used to generate html pages for vocabulary items.')
         cli.r(longOpt:'rdf', args:1, 'generates RDF/OWL ontology in the specifed format')
+        cli.R(longOpt:'release', 'generate a release version otherwise generates a SNAPSHOT version.')
         cli.i(longOpt:'index', args:1, 'template used to generate the index.html page.')
         cli.j(longOpt:'java', args:1, 'generates a Java class containing URI defintions.')
         cli.d(longOpt: 'discriminators', 'generated Discriminator DSL fragment.')
@@ -680,6 +700,9 @@ public class Metadata {
         VocabDsl dsl = new VocabDsl()
         if (params.v) {
             dsl.version = params.v
+        }
+        if (params.R) {
+            dsl.release = true
         }
         File scriptFile = new File(files[0])
         if (params.j) {
