@@ -69,4 +69,62 @@ class VocabDslTest {
         VocabDsl.main("-x src/test/resources/lapps.vocab".split())
     }
 
+    @Test
+    void compileError() {
+        String script = '''Thing {
+    definition 'definition'
+    properties {
+        type {
+            type: 'The type'
+            description 'desc'
+        }
+    }
+}
+AnotherThing {
+    parent 'Thing'
+    definition 'defn'
+    properties {
+        type: 'type'
+        description: 'desc'
+    }
+}
+'''
+        VocabDsl dsl = new VocabDsl()
+        try {
+            dsl.run(script, new File('/tmp'))
+            println dsl.elements.size()
+        }
+        catch (Exception e) {
+            println e.message
+        }
+    }
+
+    @Test
+    void listing() {
+        String src = '''
+Thing {
+    definition "The thing"
+    properties {
+        prop1 {
+            type "String"
+            description "The type fo thing"
+        }
+        value {
+            type "URI"
+            description "the uri"
+        }
+    }
+}
+'''
+        VocabDsl dsl = new VocabDsl()
+        dsl.printListing = true
+        dsl.version = '1.0.0'
+        dsl.run(src, new File("/tmp"))
+    }
+
+    @Test
+    void version() {
+        String[] args = [ '-v' ]
+        VocabDsl.main(args)
+    }
 }

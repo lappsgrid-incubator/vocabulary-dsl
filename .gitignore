@@ -2,6 +2,7 @@ target
 pom.xml.tag
 pom.xml.releaseBackup
 pom.xml.next
+dependency-reduced-pom.xml
 release.properties
 VERSION
 src/main/java/**/Version.java

@@ -93,4 +93,58 @@ class DatatypeTest {
         }
     }
 
+    @Test
+    void fake() {
+        String source = '''
+            println "Hello $name" 
+            greet(name)
+            run {
+                println "printing Hello $name"
+                greet("greeting world")
+                foo("bar")
+                bar("root")
+            }
+         '''
+        Binding binding = new Binding()
+        binding.setVariable("name", "World")
+        GroovyShell shell = new GroovyShell(binding)
+        Script script = shell.parse(source)
+        MetaClass meta = new ExpandoMetaClass(script.class, false)
+        meta.greet = { String name ->
+            println "Hello $name"
+        }
+        meta.run = { Closure cl ->
+            cl.delegate = new Handler()
+            cl.resolveStrategy = Closure.DELEGATE_FIRST
+            cl()
+        }
+        meta.initialize()
+        script.metaClass = meta
+        script.run()
+    }
+
+}
+
+class Handler {
+
+    Handler() {
+
+    }
+
+    void foo(String value) {
+        println "Foo: $value"
+    }
+
+    def propertyMissing(String name, value) {
+        throw new MissingPropertyException("Unknown property ${name}")
+    }
+
+    def propertyMissing(String name) {
+        throw new MissingPropertyException("Unknown property ${name}")
+    }
+
+    def methodMissing(String name, args) {
+        println "Handling $name"
+        true
+    }
 }

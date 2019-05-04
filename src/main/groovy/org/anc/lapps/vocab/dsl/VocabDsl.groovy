@@ -54,8 +54,12 @@ class VocabDsl {
     // Ontology used when generating RDF/OWL.  Instances are created and
     // destroyed as needed.
     OntModel ontology
+
     String version  = "1.3.0"
     boolean release = false
+
+    // List the script before running it.
+    boolean printListing = false
 
     void run(File file, File destination) {
         parentDir = file.parentFile
@@ -109,9 +113,16 @@ class VocabDsl {
     }
 
     void run(String scriptString, File destination) {
+        if (printListing) {
+            int n = 0
+            scriptString.eachLine { String line ->
+                printf("%03d %s\n", ++n, line)
+            }
+        }
+
         this.destination = destination
-        compile(scriptString)
         try {
+            compile(scriptString)
             // Now generate the HTML.
             makeHtml()
             makeIndexHtml()
@@ -523,6 +534,9 @@ class VocabDsl {
  * This file is machine generated and any edits will be lost the next
  * time the file is generated. Use the https://github.com/lapps/vocabulary-pages
  * project to make changes.
+ *
+ * Vocabulary v${version}
+ * Copyright 2019 The Language Applications Grid. 
  */
 package ${packageName};
 
@@ -564,7 +578,10 @@ public class ${className} {
  * This file is machine generated and any edits will be lost the next
  * time the file is generated. Use the https://github.com/lapps/vocabulary-pages
  * project to make changes.
- */
+ *
+ * Vocabulary v${version}
+ * Copyright 2019 The Language Applications Grid. 
+*/
 
 package ${packageName};
 
@@ -608,6 +625,9 @@ public class Features {
  * This file is machine generated and any edits will be lost the next
  * time the file is generated. Use the https://github.com/lapps/vocabulary-pages
  * project to make changes.
+ *
+ * Vocabulary v${version}
+ * Copyright 2019 The Language Applications Grid. 
  */
 
 package ${packageName};
@@ -645,18 +665,19 @@ public class Metadata {
         CliBuilder cli = new CliBuilder()
         cli.usage = "vocab [-?|-v] -d <dsl> -i <template> -h <template> -o <directory>"
         cli.header = "Generates LAPPS Vocabulary web site a LAPPS Vocab DSL file."
-        cli.V(longOpt:'version', 'displays current application version number.')
+        cli.v(longOpt:'version', 'displays current application version number.')
         cli.h(longOpt:'html', args:1,'template used to generate html pages for vocabulary items.')
         cli.r(longOpt:'rdf', args:1, 'generates RDF/OWL ontology in the specifed format')
-        cli.R(longOpt:'release', 'generate a release version otherwise generates a SNAPSHOT version.')
+//        cli.R(longOpt:'release', 'generate a release version otherwise generates a SNAPSHOT version.')
         cli.i(longOpt:'index', args:1, 'template used to generate the index.html page.')
         cli.j(longOpt:'java', args:1, 'generates a Java class containing URI defintions.')
         cli.d(longOpt: 'discriminators', 'generated Discriminator DSL fragment.')
         cli.f(longOpt:'features', 'generates the Features.java with element property names.')
         cli.p(longOpt:'package', args:1, 'package name for the Java class.')
         cli.o(longOpt:'output', args:1, 'output directory.')
+        cli.l(longOpt:'list', 'List compiled script with line numbers.')
         cli.b(longOpt:'debug', 'prints a data dump rather than generating anything.')
-        cli.v(longOpt:'vocabVersion', args: 1, 'version of the vocabulary being generated.')
+        cli.V(longOpt:'vocabVersion', args: 1, 'version of the vocabulary being generated.')
         cli.x(longOpt:'xsd', 'generates the XML Schema for any datatypes defined.')
         cli.'?'(longOpt:'help', 'displays this usage messages.')
 
@@ -669,9 +690,14 @@ public class Metadata {
             cli.usage()
             return
         }
-        if (params.V) {
+        if (params.v) {
+            String versionString = "LAPPS Vocabulary DSL v" + Version.getVersion()
+            InputStream stream = VocabDsl.getResourceAsStream('/build')
+            if (stream) {
+                versionString += ' Build ' + stream.text.trim()
+            }
             println()
-            println "LAPPS Vocabulary DSL v" + Version.getVersion()
+            println  versionString
             println "Copyright 2019 American National Corpus"
             println()
             return
@@ -698,12 +724,20 @@ public class Metadata {
             return
         }
         VocabDsl dsl = new VocabDsl()
-        if (params.v) {
-            dsl.version = params.v
+        if (params.V) {
+            dsl.version = params.V
         }
-        if (params.R) {
+        if (params.l) {
+            dsl.printListing = true
+        }
+
+        if (dsl.version && (dsl.version.contains('-SNAPHOST') || dsl.version.contains('-RC'))) {
+            dsl.release = false
+        }
+        else {
             dsl.release = true
         }
+
         File scriptFile = new File(files[0])
         if (params.j) {
             String packageName = "org.lappsgrid.discrimintor"

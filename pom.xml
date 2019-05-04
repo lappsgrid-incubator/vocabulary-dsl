@@ -107,7 +107,8 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>        </plugins>
+            </plugin>
+        </plugins>
     </build>
     <dependencies>
         <dependency>

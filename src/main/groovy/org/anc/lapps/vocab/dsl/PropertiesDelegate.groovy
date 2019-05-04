@@ -33,9 +33,16 @@ class PropertiesDelegate {
         }
 
         Closure cl = (Closure) args[0]
-        cl.delegate = new PropertyDelegate(elements, annotationType, name)
+        PropertyDelegate prop = new PropertyDelegate(elements, annotationType, name)
+        cl.delegate = prop
         cl.resolveStrategy = Closure.DELEGATE_FIRST
         cl()
-        properties[name] = cl.delegate
+        if (prop.type == null) {
+            throw new VocabularyException("No type defined for property '${name}'.")
+        }
+        if (prop.description == null) {
+            throw new VocabularyException("No description defined for property '${name}'.")
+        }
+        properties[name] = prop
     }
 }
