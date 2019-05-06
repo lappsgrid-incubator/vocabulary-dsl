@@ -103,9 +103,11 @@ class VocabDsl {
         final Resource IDREFS = ResourceFactory.createResource("http://www.w3.org/2001/XMLSchema#IDREFS")
         TYPE_MAP = [
             ID: XSD.ID,
+            "URI": XSD.anyURI,
             "Integer": XSD.xlong,
             "List of IDs": IDREFS,
             "List of URI": ResourceFactory.createResource("$DATATYPE#list_uri"),
+            "List of Strings": ResourceFactory.createResource("$DATATYPE#string_list"),
             "Set of IDs": IDREFS,
             "String": XSD.xstring,
             "String or URI": XSD.xstring
@@ -113,13 +115,6 @@ class VocabDsl {
     }
 
     void run(String scriptString, File destination) {
-        if (printListing) {
-            int n = 0
-            scriptString.eachLine { String line ->
-                printf("%03d %s\n", ++n, line)
-            }
-        }
-
         this.destination = destination
         try {
             compile(scriptString)
@@ -136,6 +131,12 @@ class VocabDsl {
     }
 
     void compile(String scriptString) {
+        if (printListing) {
+            int n = 0
+            scriptString.eachLine { String line ->
+                printf("%03d: %s\n", ++n, line)
+            }
+        }
         elements = []
         elementIndex = [:]
         ClassLoader loader = getLoader()
