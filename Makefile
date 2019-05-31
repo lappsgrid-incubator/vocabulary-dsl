@@ -20,8 +20,8 @@ help:
 	@echo
 
 jar:
-	awk '{printf("%d\n", $$1+1)}' build > build.tmp && mv build.tmp build
-	cp build src/main/resources
+	#awk '{printf("%d\n", $$1+1)}' build > build.tmp && mv build.tmp build
+	#cp build src/main/resources
 	mvn package
 
 clean:
