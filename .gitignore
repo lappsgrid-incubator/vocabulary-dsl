@@ -12,5 +12,6 @@ html/*.html
 *.iml
 *.ipr
 *.iws
+build
 
 

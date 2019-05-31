@@ -1,0 +1,9 @@
+Thing {
+	definition 'The thing'
+	properties {
+		type {
+			type 'String'
+			description 'desc'
+		}
+	}
+}

@@ -13,7 +13,7 @@ help:
 	@echo "        jar : Creates the vocab-$(VERSION).jar file."
 	@echo "    release : Creates and zips the startup script and jar file."
 	@echo "    install : Copies the jar and startup script to the user's bin directory."
-	@echo "     upload : Uploads the zip files to the ANC web server."
+	@echo "     upload : Uploads the zip files to downloads.lappsgrid.org"
 	@echo "     commit : Commits the jar to GitHub and creates a PR."
 	@echo "        all : Does all of the above."
 	@echo "       help : Displays this help message."

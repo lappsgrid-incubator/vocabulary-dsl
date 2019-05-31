@@ -32,7 +32,7 @@ class DatatypeDelegate {
         }
     }
 
-    void simple(String name, Closure body) {
+    void simpleType(String name, Closure body) {
         XmlDelegate delegate = new XmlDelegate(root,"xs:simpleType")
         body.delegate = delegate
         body.resolveStrategy = Closure.DELEGATE_FIRST
@@ -44,7 +44,7 @@ class DatatypeDelegate {
         }
     }
 
-    void complex(String name, Closure body) {
+    void complexType(String name, Closure body) {
         XmlDelegate delegate = new XmlDelegate(root, "xs:complexType")
         body.delegate = delegate
         body.resolveStrategy = Closure.DELEGATE_FIRST
