@@ -1,14 +1,27 @@
+
+/*
+ * Custom types used to generate the XML Schema. This format is just
+ * XML Schema using a Groovy MarkupBuilder for the format instead of XML.
+ */
 Datatypes {
-	simple('list_uri') {
+	simpleType('list_uri', "List of URI") {
 	    restriction {
 	        simpleType {
 	            list itemType:'xs:anyURI'
 	        }
 	    }
 	}
-	complex('morphology') {
+	simpleType('string_list', "List of String") {
+	    alias "List of Strings"
+		restriction {
+			simpleType {
+				list itemType:'xs:string'
+			}
+		}
+	}
+	complexType('morphology') {
 	    sequence {
-	        element type:'xs:string', name:'majorWordClass'
+	        element name:'majorWordClass', type:'xs:string'
 	        element name:'wordClass', type:'xs:string'
 	        element name:'prefix', type:'xs:string'
 	        element name:'suffix', type:'xs:string'

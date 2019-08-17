@@ -15,7 +15,7 @@ import org.codehaus.groovy.control.customizers.ImportCustomizer
  * @author Keith Suderman
  */
 class VocabDsl {
-    static final String VOCAB = 'http://vocab.lappsgrid.org/'
+    static final String VOCAB = 'http://vocab.lappsgrid.org'
     static final String EXTENSION = ".vocab"
 
     Map TYPE_MAP
@@ -94,8 +94,8 @@ class VocabDsl {
             "URI": XSD.anyURI,
             "Integer": XSD.xlong,
             "List of IDs": IDREFS,
-            "List of URI": ResourceFactory.createResource("$DATATYPE#list_uri"),
-            "List of Strings": ResourceFactory.createResource("$DATATYPE#string_list"),
+//            "List of URI": ResourceFactory.createResource("$DATATYPE#list_uri"),
+//            "List of Strings": ResourceFactory.createResource("$DATATYPE#string_list"),
             "Set of IDs": IDREFS,
             "String": XSD.xstring,
             "String or URI": XSD.xstring
@@ -119,6 +119,7 @@ class VocabDsl {
     }
 
     void compile(String scriptString) {
+        initTypeMap()
         if (printListing) {
             int n = 0
             scriptString.eachLine { String line ->
@@ -149,8 +150,8 @@ class VocabDsl {
         if (resource) {
             return resource
         }
+
         if (type.startsWith("Datatype#")) {
-//            String v = version.replace("-SNAPSHOT", "").replaceAll("-RC\\d*", "")
             if (release) {
                 resource = ontology.createResource("${VOCAB}/${type}")
             }
@@ -161,8 +162,7 @@ class VocabDsl {
         else {
             resource = ontology.createResource(type)
         }
-//        println "Types"
-//        TYPE_MAP.each { k,v -> println "$k -> $v" }
+//        println "Created resource for $type : ${resource.toString()}"
         TYPE_MAP[type] = resource
         return resource
     }
@@ -201,11 +201,11 @@ class VocabDsl {
     }
 
     DatatypeProperty makeProperty(String annotation, String name) {
-        return ontology.createDatatypeProperty("${VOCAB}${annotation}#${name}")
+        return ontology.createDatatypeProperty("${VOCAB}/${annotation}#${name}")
     }
 
     AnnotationProperty makeMetadata(String name) {
-        return ontology.createAnnotationProperty("${VOCAB}metadata#${name}")
+        return ontology.createAnnotationProperty("${VOCAB}/metadata#${name}")
     }
 
     void makeOwl(File script, File destination, String ext) {
@@ -213,8 +213,8 @@ class VocabDsl {
     }
 
     void makeOwl(File script, RDFFormat format, File destination, String ext) {
+        //initTypeMap()
         compile(script.text)
-        initTypeMap()
 
         Map<String,OntClass> classes = [:]
         Map<String,Resource> resources = [:]
@@ -241,7 +241,7 @@ class VocabDsl {
             if (theClass) {
                 throw new VocabularyException("Duplicate element : ${element.name}")
             }
-            theClass = ontology.createClass(VOCAB + element.name)
+            theClass = ontology.createClass(VOCAB + '/' + element.name)
             classes[element.name] = theClass
             if (element.definition) {
                 theClass.addComment(ontology.createLiteral(element.definition))
@@ -330,7 +330,7 @@ class VocabDsl {
             included.run()
         }
         meta.Datatypes = { Closure cl ->
-            cl.delegate = new DatatypeDelegate()
+            cl.delegate = new DatatypeDelegate(TYPE_MAP)
             cl.resolveStrategy = Closure.DELEGATE_FIRST
             cl()
             schema = cl.delegate.root
@@ -440,6 +440,7 @@ class VocabDsl {
 
     void writeSchema(File scriptFile, File destination) {
         File file = new File(destination, "Datatype.xsd")
+//        initTypeMap()
         compile(scriptFile.text)
         StringWriter string = new StringWriter()
         PrintWriter writer = new PrintWriter(string)
