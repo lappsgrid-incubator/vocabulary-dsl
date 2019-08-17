@@ -4,7 +4,8 @@ package org.anc.lapps.vocab.dsl
  * @author Keith Suderman
  */
 class PropertyDelegate {
-    static final String DATATYPE = "http://vocab.lappsgrid.org/1.3.0/Datatype"
+    /*
+    static final String DATATYPE = "http://vocab.lappsgrid.org/Datatype"
     static final TYPE_MAP = [
             ID: "xsd:ID",
             "Integer": "xsd:long",
@@ -14,6 +15,7 @@ class PropertyDelegate {
             "String": "xsd:string",
             "String or URI": "xsd:string"
     ]
+    */
     String type
     String description
     boolean required = false;

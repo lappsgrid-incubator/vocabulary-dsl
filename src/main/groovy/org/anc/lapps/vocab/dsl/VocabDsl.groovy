@@ -1,28 +1,16 @@
 package org.anc.lapps.vocab.dsl
 
-import groovy.xml.XmlUtil
-import org.apache.jena.datatypes.RDFDatatype
-import org.apache.jena.datatypes.xsd.XSDDatatype
-import org.apache.jena.datatypes.xsd.impl.XSDPlainType
-import org.apache.jena.ontology.AnnotationProperty
-import org.apache.jena.ontology.DatatypeProperty
-import org.apache.jena.ontology.OntClass
-import org.apache.jena.ontology.OntModel
-import org.apache.jena.ontology.OntModelSpec
-import org.apache.jena.ontology.OntResource
-import org.apache.jena.rdf.model.Model
+import groovy.cli.commons.CliBuilder
+import org.apache.jena.ontology.*
 import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.rdf.model.Property
 import org.apache.jena.rdf.model.Resource
 import org.apache.jena.rdf.model.ResourceFactory
-import org.apache.jena.riot.Lang
 import org.apache.jena.riot.RDFDataMgr
 import org.apache.jena.riot.RDFFormat
 import org.apache.jena.vocabulary.XSD
 import org.codehaus.groovy.control.CompilerConfiguration
 import org.codehaus.groovy.control.customizers.ImportCustomizer
-import groovy.cli.commons.CliBuilder
-
 /**
  * @author Keith Suderman
  */
@@ -560,6 +548,9 @@ public class ${className} {
                     out.println "\t */"
                     out.println "\t@Deprecated"
                 }
+                out.println "\t/**"
+                out.println "\t * ${e.definition}"
+                out.println "\t */"
                 out.println "\tpublic static final String ${toSnakeCase(e.name) } = \"http://vocab.lappsgrid.org/${e.name}\";"
             }
             out.println "}"
@@ -598,11 +589,18 @@ public class Features {
                     out.println "\tpublic static class ${e.name}${superClass} {"
                     e.properties.each { String name, ignored ->
                         String snakeCase = toSnakeCase(name)
+                        if (e.definition) {
+                            out.println("\t\t/**")
+                            out.println("\t\t * ${e.definition}")
+                            out.println("\t\t */")
+                        }
                         if (name == "pos") {
                             // Hack-around since the POS tag name changed.
                             out.println "\t\tpublic static final String PART_OF_SPEECH = \"pos\";"
                         }
-                        out.println "\t\tpublic static final String ${snakeCase} = \"${name}\";"
+                        else {
+                            out.println "\t\tpublic static final String ${snakeCase} = \"${name}\";"
+                        }
                     }
                     out.println "\t}"
                     out.println()
@@ -633,6 +631,9 @@ public class Features {
 
 package ${packageName};
 
+/**
+ * 
+ */
 public class Metadata {
 \tprivate Metadata() { }
 """
@@ -645,6 +646,11 @@ public class Metadata {
                 out.println "\tpublic static class ${e.name}${superClass} {"
                 e.metadata.each { String name, ignored ->
                     String snakeCase = toSnakeCase(name)
+                    if (e.definition) {
+                        out.println("\t\t/**")
+                        out.println("\t\t * ${e.definition}")
+                        out.println("\t\t */")
+                    }
                     out.println "\t\tpublic static final String ${snakeCase} = \"${name}\";"
                 }
                 out.println "\t}"
