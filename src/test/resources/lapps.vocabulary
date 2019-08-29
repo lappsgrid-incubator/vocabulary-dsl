@@ -1,0 +1,613 @@
+/*
+ * Define some common URI prefixes. These can later be
+ * used in other strings to create URLs, eg:
+ * "$vocab/Token", "$iso/DC-2119"
+ */
+schema="http://schema.org"
+iso="http://www.isocat.org/datcat"
+
+include 'Datatypes.schema'
+
+/*
+version='1.2.9-SNAPSHOT'
+File versionFile = new File('VERSION')
+if (versionFile.exists()) {
+	version = versionFile.text.trim()
+}
+*/
+
+//TYPE = "http://vocab.lappsgrid.org/$version/Datatype"
+TYPE = "Datatype"
+
+XSD = [
+	string: 'xsd:string',
+	id:     'xsd:ID',
+	idrefs: 'xsd:IDREFS',
+	uri:    'xsd:anyURI',
+	long:   'xsd:long',
+	list_uri: "${TYPE}#list_uri",
+	morphology: "${TYPE}#morphology"
+]
+
+// Message to be displayed for deprecated named entities.
+NE_DEPRECATED = '''Use <link>NamedEntity</link> with appropriate @category and @type attributes instead. This annotation type will be removed in a future version of the vocabulary.'''
+        
+Thing {
+	definition "The most generic specification."
+	sameAs "$schema/Thing"
+	properties {
+		alternateName {
+			type "String"
+			description "An alias for the item."
+		}
+	}
+}
+
+Annotation {
+	parent "Thing"
+	definition "Linguistic information added to a word, phrase, clause, sentence, document, etc., or a relation among them."
+	sameAs "$iso/DC-2318"
+	metadata {
+	    producer {
+	        type "List of URI"
+	        description "The software that produced the annotations."
+	    }
+	    rules {
+	        type "List of URI"
+	        description "The documentation (if any) for the rules that were used to identify the annotations."
+	    }
+	    type {
+	    	type "String"
+	    	description "The value type of the annotations produced."
+	    }
+	}
+	properties {
+		id {
+			type "String"
+			description "A unique identifier associated with the annotation."
+			required true
+		}
+	}
+}
+
+Region {
+	parent "Annotation"
+	definition """An annotation over a region in primary data. A <b>Region</b> may be defined by pointing directly into primary data 
+	(for text, using <em>start</em> and
+	<em>end</em> offsets) or 
+	by linking to one or more other <link>Annotation</link>s with the <em>targets</em> 
+	 property."""
+	properties {
+		targets {
+			type "List of URI"
+			description """IDs of a sequence of annotations covering the region of primary data referred to by this annotation. Used as an alternative to <em>start</em> and <em>end</em> to point to component annotations (e.g., a token sequence) rather than directly into primary data, or to link two or more annotations."""
+		}
+		start {
+			type "Integer"
+			description "The starting offset (0-based) in the primary data."
+		}
+		end {
+			type "Integer"
+			description "The ending offset (0-based) in the primary data."
+		}
+	}
+}
+
+Relation {
+	parent 'Annotation'
+	definition '''Any relationship between linguistic forms or constituents, e.g., a
+grammatical relation such as subject-object, a semantic relation between meanings or <i>roles</i>, a temporal relation
+indicating the simultaneity or ordering in time of events or states, etc.'''
+	properties {
+		label {
+			type "String or URI"
+			description "A category label."
+			required true
+		}
+	}
+}
+
+GenericRelation {
+	parent 'Relation'
+	definition 'Any relation involving one or more arguments.'
+	properties {
+		relation {
+			type "ID"
+			description 'The head of the relation.'
+			required true
+		}
+		arguments {
+			type 'List of IDs'
+			description 'The arguments of the relation.'
+			required true
+		}
+	}
+}
+
+SemanticRole {
+	parent 'Relation'
+	definition 'The underlying relationship that a participant has with the main predicate in a clause.'
+	properties {
+		head {
+			type "ID"
+			description 'The predicate.'
+			required true
+		}
+		argument {
+			type 'ID'
+			description 'The element that fulfills the role relative to the predicate.'
+			required true
+		}
+	}
+}
+
+Paragraph {
+	parent "Region"
+	definition "A division of a piece of writing, usually dealing with a single theme and indicated by a new line, indentation, and/or numbering."
+}
+
+Sentence {
+	parent "Region"
+	definition "A sequence of words capable of standing alone to make an assertion, ask a question, or give a command, usually consisting of a subject and a predicate containing a finite verb. "
+	sameAs "$iso/DC-1386"
+	properties {
+		sentenceType {
+			type "String or URI"
+			description "Values such as declarative, interrogative, exclamatory, question, fragment. Ideally a URI referencing a pre-defined descriptor."
+		}
+	}
+}
+
+NounChunk {
+	discriminator 'nchunk'
+	parent 'Region'
+	definition "The initial portion of a non-recursive noun phrase up to the head, including determiners but not including postmodifying prepositional phrases or clauses." 
+}
+
+VerbChunk {
+	parent 'Region'
+	definition "Non-recursive verb groups, which include modals, auxiliary verbs, and medial adverbs, and end at the head verb or predicate adjective."
+	discriminator 'vchunk'
+	properties {
+		vcType {
+			type "String or URI"
+			description "Values such as finite, non-finite, participle, modal, special (e.g., 'is going to investigate')."
+		}
+		tense {
+			type "String or URI"
+			description "Provides tense information for the verb. Example values include BeVBG, BeVBN, FutCon, HaveVBN, Pas, PasCon, PasPer, PasPerCon, Per, Pre, PreCon, PrePer, PrePerCon, SimFut, SimPas, SimPre, none"
+		}
+		voice {
+			type "String or URI"
+			description "Indicates if the verb group is active or passive. Possible values include ACTIVE, PASSIVE, or NONE"
+		}
+		neg {
+			type "String or URI"
+			description "Indicates whether or not the verb is negated. Values include YES, NO." 
+		}
+	}
+}
+	
+NamedEntity {
+    parent "Region"
+    definition "A phrase that clearly identifies an individual from others that have similar attributes, such as the name of a person, organization, location, artifact, etc. as well as temporal expressions."
+    sameAs "$iso/DC-2275"
+    discriminator 'ne'
+    metadata {
+    	namedEntityCategorySet {
+    		type "String or URI"
+    		description "The set of values that can be used for the category property."
+    	}
+    }
+    properties {
+    	category {
+    		type "String or URI"
+    		required true
+    		description "The type of named entity. Typically one of DATE, PERSON, ORGANIZATION, or LOCATION."
+    	}
+    	type {
+    		type "String or URI"
+    		description "A type attribute for the entity. For example the type of location or organization."
+    	}
+        gender {
+            type "String or URI"
+            description "A value such as male, female, unknown. Ideally a URI referencing a pre-defined descriptor."
+        }
+    }
+}
+
+Date {
+    parent "NamedEntity"
+    definition "A reference to a date or period."
+    similarTo "http://schema.org/Date"
+    sameAs "$iso/DC-6123"
+    deprecated NE_DEPRECATED
+    properties {
+        dateType {
+            type "String or URI"
+            description "Sub-type information such as date, datetime, time, etc. Ideally a URI referencing a pre-defined descriptor."
+        }
+    }
+}
+
+Location {
+    parent "NamedEntity"
+    definition "Name of politically or geographically defined location (cities, provinces, countries, international regions, bodies of water, mountains,named regions, etc.)"
+    sameAs "$iso/DC-4339", "$schema/Location"
+    deprecated NE_DEPRECATED
+    properties {
+        locType {
+            type "String or URI"
+            description "Location type: country, city, GPE, sea, lake, etc. Ideally a URI referencing a pre-defined descriptor."
+        }
+    }
+}
+
+Organization {
+    parent "NamedEntity"
+    definition "A named corporate, governmental, educational, religious, political, or other organizational entity."
+    sameAs "$iso/DC-2979", "$schema/Organization"
+    deprecated NE_DEPRECATED
+    properties {
+        orgType {
+            type "String or URI"
+            description "Sub-type information (e.g., government, educational, religious, political, museum, hotel, medical, etc.). Ideally a URL referencing a pre-defined descriptor."
+        }
+    }
+}
+
+Person {
+    parent "NamedEntity"
+    definition "The name of a person or family."
+    sameAs "$iso/DC-2978"
+    similarTo "$schema/Person"
+    deprecated NE_DEPRECATED
+    properties {
+        gender {
+            type "String or URI"
+            description "A value such as male, female, unknown. Ideally a URI referencing a pre-defined descriptor."
+        }
+    }
+}
+
+Token {
+    parent "Region"
+    definition "A string of one or more characters that serves as an indivisible unit for the purposes of morpho-syntactic labeling (part of speech tagging)."
+    similarTo "$iso/DC-1403"
+    metadata {
+    	posTagSet {
+    		type "String or URI"
+    		description "The definition of the tag set used by the part-of-speech tagger."
+    	}
+    }
+    properties {
+        pos {
+            type "String or URI"
+            description "Part-of-speech tag associated with the token."
+            discriminator true
+        }
+        lemma {
+            type "String or URI"
+            description "The root (base) form associated with the token. URI may point to a lexicon entry."
+            discriminator true
+        }
+        tokenType {
+            type "String or URI"
+            description "Sub-type such as word, punctuation, abbreviation, number, symbol, etc. Ideally a URI referencing a pre-defined descriptor."
+        }
+        orth {
+            type "String or URI"
+            description "Orthographic properties of the token such as LowerCase, UpperCase, UpperInitial, etc. Ideally a URI referencing a pre-defined descriptor."
+            discriminator true
+        }
+        length {
+            type "Integer"
+            description "The length of the token"
+        }
+        word {
+        	type "String"
+        	description "The surface string in the primary data covered by this Token."
+        }
+    }
+}
+
+Event {
+      parent 'Region'
+      definition 'An eventuality or state.'
+      metadata {
+		eventClassSet {
+			type "String or URI"
+			description "The URI for the set of semantic tags."
+		}
+      }
+      properties {
+      		 eventClass {
+		       type 'String'
+		       description 'Class of the event'
+		 }
+      }
+}
+
+TimeExpression {
+      parent 'Region'
+      definition 'An eventuality or state.'
+      properties {
+      		 type {
+      		      type 'String'      		      
+		      	  description 'Type of time expression: DATE, TIME, DURATION or SET'
+		      }
+      		 value {
+      		      type 'String'
+		      description 'Normalized value, using some kind of standard like ISO 8601'
+		      }
+      }
+}
+
+Coreference {
+	parent "Annotation"
+	definition "Used to mark references to other mentions of the same entity or instance."
+	discriminator 'coref'
+	properties {
+		mentions {
+			type "List of IDs"
+			description "A list of identifiers. Each identifier points to an object of type <link>Annotation</link>, or a subtype thereof."
+			required true
+		}
+		representative {
+			type "ID"
+			description "An identifier that points to the representative item in the coreference chain."
+		}
+	}
+}
+
+Markable {
+	parent "Region"
+	definition "Annotation type used if the referenced object is not already wrapped in a suitable annotation type that can be referenced."
+}
+
+Morphology {
+	parent 'Region'
+	definition 'Morphological description for a token or morpheme.'
+	properties {
+		morphemes {
+			type 'List of IDs'
+			description 'List of the Morphemes that are part of the target of the Morphology'
+		}
+		wordClass {
+			type 'String'
+			description ''
+		}
+		majorWordClass {
+			type 'String'
+			description 'No description'
+		}
+		gender {
+			type 'String'
+			description 'Nouns: masculine/feminine/neuter'
+		}
+		number {
+			type 'String'
+			description 'Nouns: singular/plural'
+		}
+		'case' {
+			type 'String'
+			description 'Nouns: nominative, genetive, dative'
+		}
+		degree {
+			type 'String'
+			description 'Adjectives: compartive/superlative'
+		}
+		verbForm {
+			type 'String'
+			description 'No description'
+		}
+		tense {
+			type 'String'
+			description 'Verbs: past, present, future, etc.'
+		}
+		mood {
+			type 'String'
+			description 'Verbs: indicative, imperative, subjunctive'
+		}
+		voice {
+			type 'String'
+			description 'Verbs: active/passive'
+		}
+		definiteness {
+			type 'String'
+			description 'definite/indefinite'
+		}
+		value {
+			type 'String'
+			description 'The original morphological analysis results as produced by a tool or as recorded in a corpus (if available).'
+		}
+		person {
+			type 'String'
+			description 'Verbs: 1st, 2nd, 3rd person'
+		}
+		aspect {
+			type 'String'
+			description 'Verbs: perfective, imperfective'
+		}
+		syntax {
+			type 'String'
+			description 'No description available'
+		}
+		prefix {
+			type 'String'
+			description 'No description available'
+		}
+		suffix {
+			type 'String'
+			description 'No description available'
+		}
+	}
+}
+
+Morpheme {
+	parent "Region"
+	definition "A meaningful morphological unit of a language that cannot be further divided."
+	properties {
+		morph {
+		      type "List of IDs"
+		      description "Annotations of type <link>Morphology</link>"
+		}
+	}
+}
+
+SemanticTag {
+	parent "Region"
+	definition "A semantic tag for a region or for another annotation."
+	metadata {
+		tagSet {
+			type "String or URI"
+			description "The URI for the set of semantic tags."
+		}
+	}
+	properties {
+		tags {
+		      type "List of Strings"
+		      description "The semantic tag(s) assigned."
+		}
+		mwe {
+			type "List of Strings"
+			description "The words in a multi-word expression."
+		}
+		type {
+			type "String or URI"
+			description "The specific type of semantic annotation (GO, USAS, etc.)"
+		}
+	}
+}
+
+PhraseStructure {
+        
+	parent "Annotation"
+	definition "A container for phrase structure information."
+	metadata {
+		categorySet {
+			type "String or URI"
+			description "The URI for the category set."
+		}
+	}
+	properties {
+		constituents {
+			type "Set of IDs"
+			description "The set of IDs for all of the <link>Constituent</link>s in the parse tree."
+			required true
+		}
+		root {
+			type "ID"
+			description "The ID for the <link>Constituent</link> or <link>Token<.link> that is the top of the tree."
+			required true
+		}
+	}
+}
+
+Constituent {
+	parent "Relation"
+	definition "A constituent of a <link>PhraseStructure</link> (parse tree)."
+	properties {
+		parent {
+			type "ID"
+			description "The parent (if any) of this constituent."
+			required true
+		}
+		children {
+			type "List of IDs"
+			description "The children (if any) of this constituent. The children are typically other Constituent annotations or <link>Token</link>s."
+			required true
+		}
+	}
+}
+
+DependencyStructure {
+	definition "A container for all dependency structure information."
+	parent "Annotation"
+	metadata {
+		dependencySet {
+			type "String or URI"
+			description "The URI for a particular set of dependency labels."
+		}
+	}
+	properties {
+		dependencyType {
+			type "String or URI"
+			description "The type of the dependencies; for example basic, collapsed, etc."
+		}
+		dependencies {
+			type "Set of IDs"
+			description "The ID values of a set of annotations of type <tt>Dependency</tt>"
+			required true
+		}
+	}
+}
+
+Dependency {
+	definition "A dependency in a <link>DependencyStructure</link>"
+	parent "Relation"
+	properties {
+		governor {
+			type "ID"
+			description "The governor of the dependency."
+			required true
+		}
+		dependent {
+			type "ID"
+			description "The dependent."
+			required true
+		}		
+	}
+}
+
+Document {
+    definition "Any electronic media content (other than computer programs or system files), including text (language), audio recordings, images, videos, web pages, etc. A document may consist of several physical computer files."
+    parent "Thing"
+    properties {
+        id {
+            type "String"
+            description "A unique identifier associated with the document."
+            required true
+        }
+        source {
+            type "String or URI"
+            description "The source of the document."
+        }
+        sourceType {
+            type "String or URI"
+            description "Source types include creator, distributor, contributor, publisher, etc."
+        }
+        encoding {
+            type "String or URI"
+            description """The physical or digital manifestation of the resource. Encoding may be used
+                to determine the software, hardware or other equipment  to display or operate the
+                resource. Recommended best practice is to select a value from the list of Internet Media
+                Types [http://www.iana.org/ assignments/media-types/] defining computer media formats).
+                <br/>
+                See also <a href="http://dublincore.org/documents/2001/04/12/usageguide/sectd.shtml#format">Dublin Core 4.13 Format</a>
+                """
+        }
+        language {
+            type "String or URI"
+            description """A language of the intellectual content of the resource. Recommended best practice
+                for the values of the Language element is defined by  RFC 3066
+                [RFC 3066, http://www.ietf.org/rfc/ rfc3066.txt] which, in conjunction with ISO 639
+                [ISO 639, http://www.oasis- open.org/cover/iso639a.html]), defines two- and three-letter
+                primary language tags with optional sub-tags. Examples include "en" or "eng" for English,
+                "akk" for Akkadian, and "en-GB" for English used in the United Kingdom.
+                <br/>
+                See also <a href="http://dublincore.org/documents/2001/04/12/usageguide/sectd.shtml#language">Dublin Core 4.15 Language</a>
+            """
+        }
+    }
+}
+
+TextDocument {
+    definition "Any electronic media content consisting of text (language). A text document may consist of several physical computer files."
+    parent "Document"
+}
+
+AudioDocument {
+    definition "Any electronic media content consisting of audio (language). An audio document may consist of several physical computer files."
+    parent "Document"
+}

@@ -16,14 +16,19 @@
 
 package org.anc.lapps.vocab.dsl
 
+import org.apache.jena.rdf.model.Resource
+import org.apache.jena.rdf.model.ResourceFactory
+
 /**
  *
  */
 class DatatypeDelegate {
 
     Node root
+    Map types
 
-    DatatypeDelegate() {
+    DatatypeDelegate(Map types) {
+        this.types = types
         root = new Node(null, "xs:schema")
         root.attributes().with {
             put("xmlns:xs", "http://www.w3.org/2001/XMLSchema")
@@ -33,7 +38,16 @@ class DatatypeDelegate {
     }
 
     void simpleType(String name, Closure body) {
-        XmlDelegate delegate = new XmlDelegate(root,"xs:simpleType")
+        simpleType(name, name, body)
+    }
+
+    void simpleType(String name, String longName, Closure body) {
+        if (types[longName] != null) {
+            throw new VocabularyException("Redefintion of type $longName")
+        }
+        Resource type = ResourceFactory.createResource("${VocabDsl.VOCAB}/Datatype#${name}")
+        types.put(longName, type)
+        XmlDelegate delegate = new XmlDelegate(root,"xs:simpleType", types, type)
         body.delegate = delegate
         body.resolveStrategy = Closure.DELEGATE_FIRST
         body()
@@ -45,7 +59,16 @@ class DatatypeDelegate {
     }
 
     void complexType(String name, Closure body) {
-        XmlDelegate delegate = new XmlDelegate(root, "xs:complexType")
+        complexType(name, name, body)
+    }
+
+    void complexType(String name, String longName, Closure body) {
+        if (types[longName] != null) {
+            throw new VocabularyException("Redefintion of type $longName")
+        }
+        Resource type = ResourceFactory.createResource("${VocabDsl.VOCAB}/Datatype#${name}")
+        types.put(longName, type)
+        XmlDelegate delegate = new XmlDelegate(root, "xs:complexType", types, type)
         body.delegate = delegate
         body.resolveStrategy = Closure.DELEGATE_FIRST
         body()
@@ -59,16 +82,28 @@ class DatatypeDelegate {
 
 class XmlDelegate {
     Node node
+    Resource type
+    Map types
 
-    XmlDelegate(Node parent, String name) {
+    XmlDelegate(Node parent, String name, Map types, Resource type) {
         node = new Node(parent, name)
+        this.type = type
+        this.types = types
+    }
+
+    void alias(String name) {
+        if (types[name] != null) {
+            throw new VocabularyException("There is already a type with the name $name")
+        }
+        println "Aliasing $name to $type"
+        types[name] = type
     }
 
     void methodMissing(String name, args) {
         String qName = "xs:$name"
         if (args[0] instanceof Closure) {
             Closure cl = (Closure) args[0]
-            cl.delegate = new XmlDelegate(node, qName)
+            cl.delegate = new XmlDelegate(node, qName, types, type)
             cl.resolveStrategy = Closure.DELEGATE_FIRST
             cl()
         }
